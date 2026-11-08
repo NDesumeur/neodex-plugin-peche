@@ -1,9 +1,9 @@
 {
   "pluginId": "neodex.peche",
   "repo": "NDesumeur/neodex-plugin-peche",
-  "version": "1.2.1",
-  "sha256": "1840e979dc8143c4f00f09067dff912719c9fc4220162dca9dc3900fbf11b89c",
-  "approvedAt": "2026-11-06T21:35:48.016Z",
+  "version": "1.2.2",
+  "sha256": "efe71f1663e0b38e31502ca16ec0a4c11e850ab389a0766e01ca4dd68cb2ae39",
+  "approvedAt": "2026-11-08T12:10:49.555Z",
   "neobase": ">=4.0.0",
-  "signature": "ltdBlxEZnYRNOgmLSx8K4fuHxr6qEURxsCs53mQpJRCrdxm6rRb1YKg26Fs01bk+l8lo+/0LFQa6nc2OjPfJBw=="
+  "signature": "UnD6g/eHxCYY7K6GnEAxIVURepsJjv8/87LvB6e3zH1d2RUbvXLp0kL7wRdhrZZpsIQNOLFhvg5XfsFEak/ACA=="
 }
