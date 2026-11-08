@@ -3,7 +3,7 @@
   "name": "Pêche",
   "version": "1.2.1",
   "author": "NDesumeur",
-  "description": "Lance ta ligne de lieu en lieu : des dizaines d'espèces dessinées, appâts, cannes, météo et collection.",
+  "description": "Jeu de pêche : dose ton lancer, attends la vraie touche, ferre vite puis fatigue le poisson en gérant la tension et ses départs à gauche ou à droite. 153 espèces sur 7 lieux, chacune avec ses heures, sa météo et ses appâts préférés ; jour, nuit et météo changeante, 5 cannes, 7 appâts, coffres au trésor, collection, trois défis par jour et niveau de pêcheur.",
   "icon": "icon.png",
   "entry": "index.js",
   "view": "peche",
