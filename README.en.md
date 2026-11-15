@@ -50,6 +50,18 @@ A fish sells according to its rarity, its size compared with its species and the
 - **Challenges**: three challenges a day, rewarded with coins (catch a number of fish, a rare fish, land perfect strikes, a catch close to maximum size, a new species, a streak, fish at night, a chest).
 - **Angler level**: each catch gives experience (more for a rare fish, a new species or a perfect strike). Each level reels a little faster and attracts rare fish a little more.
 
+## Sounds and music
+
+The reel clicks while you reel in, the float goes splash, the water laps (louder in the rain and at the river), birds sing by day and soft music plays while you fish, calmer at night. The **Sound** button turns it all off or back on.
+
+## The aquarium
+
+At the top of the **Collection**, your latest catches swim in an aquarium. Click a fish to open its card: it blinks in the aquarium while it is selected.
+
+## Full screen
+
+The **Full screen** button fills the whole screen with the lake (Escape to leave).
+
 ## Data and sync
 
 The whole game (coins, gear, places, collection, challenges, level and game time) is stored by NeoDex, backed up and synced between your PCs when sync is on. On first launch, the plugin picks up what you already had in NeoDex.

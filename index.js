@@ -1,7 +1,7 @@
 // Pêche : ton appli d'origine (HTML et code inchangés), livrée en plugin.
 // Ses données sont dans le dossier du plugin, que NeoDex sauvegarde (synchro cloud et sauvegardes) ; à la première ouverture elle reprend ce que tu avais dans NeoDex.
 // Elle tourne dans le bac à sable de NeoDex, avec ses outils d'interface (ctx.host) et seulement les autorisations de son plugin.json.
-const HTML = "<div class=\"appWrap wide\">\n      <div class=\"agHead\"><span class=\"label\">Pêche</span><span class=\"hint\" id=\"fiInfo\"></span><div class=\"agNav\"><select class=\"f gSel\" id=\"fiSpot\"></select><select class=\"f gSel\" id=\"fiBait\"></select><button class=\"btn px\" id=\"fiShopBtn\">BOUTIQUE</button><button class=\"btn px\" id=\"fiDexBtn\">COLLECTION</button><button class=\"btn px\" id=\"fiQuestBtn\">DÉFIS</button></div></div>\n      <div class=\"gameBox g169\"><canvas id=\"fiCanvas\" width=\"384\" height=\"216\"></canvas></div>\n      <div id=\"fiShop\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiDex\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiQuest\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div class=\"hint\">Maintiens clic ou espace pour doser le lancer, attends la vraie touche (pas les frémissements) et clique vite : un ferrage parfait fatigue déjà le poisson. Maintiens pour remonter, relâche quand il tire ou saute, et contre ses départs avec ← → (ou la souris). Niveau de pêcheur, défis du jour, séries de prises et trésors. Chaque espèce a ses lieux, ses heures, sa météo et ses appâts. La partie est sauvegardée et synchronisée.</div>\n    </div>";
+const HTML = "<div class=\"appWrap wide\">\n      <div class=\"agHead\"><span class=\"label\">Pêche</span><span class=\"hint\" id=\"fiInfo\"></span><div class=\"agNav\"><select class=\"f gSel\" id=\"fiSpot\"></select><select class=\"f gSel\" id=\"fiBait\"></select><button class=\"btn px\" id=\"fiShopBtn\">BOUTIQUE</button><button class=\"btn px\" id=\"fiDexBtn\">COLLECTION</button><button class=\"btn px\" id=\"fiQuestBtn\">DÉFIS</button><button class=\"btn px\" id=\"fiSndBtn\">SON</button><button class=\"btn px\" id=\"fiFsBtn\">PLEIN ÉCRAN</button></div></div>\n      <div class=\"gameBox g169\"><canvas id=\"fiCanvas\" width=\"384\" height=\"216\"></canvas></div>\n      <div id=\"fiShop\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiDex\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiQuest\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div class=\"hint\">Maintiens clic ou espace pour doser le lancer, attends la vraie touche (pas les frémissements) et clique vite : un ferrage parfait fatigue déjà le poisson. Maintiens pour remonter, relâche quand il tire ou saute, et contre ses départs avec ← → (ou la souris). Niveau de pêcheur, défis du jour, séries de prises et trésors. Chaque espèce a ses lieux, ses heures, sa météo et ses appâts. La partie est sauvegardée et synchronisée.</div>\n    </div>";
 /*CSS-MOVED*/ const CSS = `.gameBox{display:grid;place-items:center;padding:10px;background:#05010b;box-shadow:0 0 0 3px var(--line2)}
 .gameBox canvas{width:min(100%,1152px);aspect-ratio:384/144;image-rendering:pixelated;cursor:var(--cp,pointer)}
 .gameBox.tall canvas{width:auto;height:min(720px,72vh);aspect-ratio:240/320}
@@ -19,6 +19,10 @@ const HTML = "<div class=\"appWrap wide\">\n      <div class=\"agHead\"><span cl
 .fiCell.on{--fill:var(--btnh)}
 .fiDetail{flex-direction:row;align-items:center;gap:20px;flex-wrap:wrap}
 .fiDetail img{image-rendering:pixelated;max-width:240px}
+.gameBox:fullscreen{padding:0;box-shadow:none}
+.gameBox:fullscreen canvas{width:min(100vw,calc(100vh * 384 / 216))}
+.appWrap > .hint,.fiPanel .hint,.agHead .hint{font-size:16px;line-height:1.45}
+.fiTank{width:min(100%,1152px);aspect-ratio:384/120;image-rendering:pixelated;cursor:var(--cp,pointer);box-shadow:0 0 0 3px var(--line2)}
 `;  // le style de ce plugin (il utilise les variables du thème de NeoDex)
 export default async function (ctx) {
   const view = ctx.view;
@@ -448,8 +452,52 @@ function fiStart() {
   fiUi(); gameLoop(fi, 'neodex:fishing', fiUpdate, fiDraw);
 }
 function fiSay(text, color = '#ffffff', t = 150) { fi.msg = {text, color, t}; }
+let fiAc = null, fiAmb = null, fiMusT = 0, fiMusI = 0, fiMusN = 0, fiSndN = 0;
+const fiMuted = () => !!fiSave().mute;
+function fiAudio() {
+  try {
+    fiAc ??= new AudioContext(); if (fiAc.state === 'suspended') fiAc.resume();
+    if (!fiAmb) {  // l'eau : un bruit doux, filtré, en boucle ; son volume suit le lieu et la météo
+      const n = fiAc.sampleRate * 2, buf = fiAc.createBuffer(1, n, fiAc.sampleRate), ch = buf.getChannelData(0); let v = 0;
+      for (let i = 0; i < n; i++) { v = v * .97 + (Math.random() * 2 - 1) * .03; ch[i] = v * (1 + .5 * Math.sin(i / n * Math.PI * 6)); }
+      const s = fiAc.createBufferSource(), f = fiAc.createBiquadFilter(), g = fiAc.createGain(); s.buffer = buf; s.loop = true; f.type = 'lowpass'; f.frequency.value = 700; g.gain.value = 0;
+      s.connect(f).connect(g).connect(fiAc.destination); s.start(); fiAmb = {g};
+    }
+  } catch {}
+  return fiAc;
+}
+function fiTone(f, d, type = 'sine', vol = .03, slide = 0, when = 0) {
+  const ac = fiAc; if (!ac || fiMuted()) return; fiSndN++;
+  const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .05);
+}
+function fiPlouf(big) {
+  const ac = fiAc; if (!ac || fiMuted()) return; fiSndN++;
+  const n = Math.round(ac.sampleRate * .4), buf = ac.createBuffer(1, n, ac.sampleRate), ch = buf.getChannelData(0); for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / n) ** 3;
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = buf; f.type = 'lowpass'; f.frequency.value = big ? 700 : 1100; g.gain.value = big ? .16 : .09;
+  s.connect(f).connect(g).connect(ac.destination); s.start(); fiTone(big ? 200 : 330, .22, 'sine', big ? .07 : .05, big ? 70 : 110);
+}
+const FI_MUS = [[262, 330, 392, 523], [220, 262, 330, 440], [175, 220, 262, 349], [196, 247, 294, 392]];  // do, la mineur, fa, sol : quatre accords qui tournent
+function fiSoundTick() {
+  if (!fiAc || !fiAmb) return;
+  const on = !!fi && view.classList.contains('on') && fi.mode === 'play' && !document.hidden && !fiMuted(), s = fiSave(), t = fiAc.currentTime;
+  const wet = s.weather === 'pluie' || s.weather === 'orage';
+  fiAmb.g.gain.setTargetAtTime(on ? (FI_SPOTS[s.spot]?.flow ? .05 : .03) + (wet ? .04 : 0) : 0, t, .4);
+  if (!on) { fiMusT = 0; return; }
+  const h = fiHour(), day = h >= 6 && h < 19;
+  if (day && !wet && Math.random() < .035) { const f = 2400 + Math.random() * 1200, k = 2 + Math.floor(Math.random() * 3); for (let i = 0; i < k; i++) fiTone(f + i * 120, .07, 'sine', .012, f * 1.35, i * .1); }  // un oiseau
+  if (fiMusT < t) fiMusT = t + .1;
+  while (fiMusT < t + .6) {  // la musique : un arpège doux, une note par demi-seconde, plus rare et plus grave la nuit
+    const ch = FI_MUS[Math.floor(fiMusI / 8) % 4], step = fiMusI % 8, when = fiMusT - t;
+    if (step === 0) fiTone(ch[0] / 2, 3.6, 'sine', .022, 0, when);
+    if (day ? step % 2 === 0 || Math.random() < .4 : step % 4 === 0) { fiTone(ch[(step * 3 + (fiMusI >> 3)) % 4] * (day ? 1 : .5), 1.4, 'triangle', .013, 0, when); fiMusN++; }
+    fiMusT += .5; fiMusI++;
+  }
+}
+setInterval(fiSoundTick, 250);
 function fiPress(down) {
   if (!fi) return;
+  if (down) fiAudio();
   fi.holding = down;
   if (fi.mode !== 'play') { if (down) fi.mode = 'play'; return; }
   const s = fiSave();
@@ -490,7 +538,7 @@ function fiFightStep(hold) {
   if (good) { if (hold) { dT *= .6; dD *= 1.5; } else dD *= .6; fi.stam -= .0009; }
   if (bad && hold) dT *= 1.5;
   if (tired) { if (hold) { dD *= 1.8; dT *= .6; } else dD *= .4; }
-  if (fi.jump > 0) { if (hold) { dT += .012; fi.jumpHeld = true; } if (--fi.jump === 0 && !fi.jumpHeld) { fi.stam -= .12; fiSay('Saut maîtrisé ! Il fatigue', '#8ee8a0', 90); } }
+  if (fi.jump > 0) { if (hold) { dT += .012; fi.jumpHeld = true; } if (--fi.jump === 0) fiPlouf(true); if (fi.jump === 0 && !fi.jumpHeld) { fi.stam -= .12; fiSay('Saut maîtrisé ! Il fatigue', '#8ee8a0', 90); } }
   fi.T += dT; fi.D += dD;
   if (fi.rush && hold) fi.stam -= .0012;
   fi.stam = Math.max(0, fi.stam);
@@ -544,7 +592,7 @@ function fiUpdate() {
   if (fi.phase === 'cast') {
     fi.castT += 1 / 40; const k = Math.min(1, fi.castT), x0 = 100, x1 = fi.target;
     fi.bob = {x: x0 + (x1 - x0) * k, y: 70 + (FI.WY - 70) * k - Math.sin(k * Math.PI) * 50};
-    if (k >= 1) { fi.phase = 'wait'; fi.bob = {x: x1, y: FI.WY}; fi.biteIn = (180 + Math.random() * 540) * FI_BAITS[s.bait].wait; fi.nibble = 0; for (let i = 0; i < 6; i++) fi.rain.push({x: x1 + (Math.random() - .5) * 8, y: FI.WY - 1, vy: -1 - Math.random() * 1.5, splash: true}); sfx('click'); }
+    if (k >= 1) { fiPlouf(false); fi.phase = 'wait'; fi.bob = {x: x1, y: FI.WY}; fi.biteIn = (180 + Math.random() * 540) * FI_BAITS[s.bait].wait; fi.nibble = 0; for (let i = 0; i < 6; i++) fi.rain.push({x: x1 + (Math.random() - .5) * 8, y: FI.WY - 1, vy: -1 - Math.random() * 1.5, splash: true}); sfx('click'); }
   }
   if (fi.phase === 'wait') {
     if (--fi.biteIn <= 0) { fi.fish = fiPick(fi.castPower); const f = fi.fish; fi.cm = Math.round((f.min + (f.max - f.min) * Math.random() ** 1.6) * 10) / 10; fi.phase = 'bite'; fi.biteT = fi.biteMax = Math.round(60 - fi.fish.rarity * 5); const sp = Math.random(); fi.special = sp < .03 ? 'chest' : sp < .07 ? 'junk' : null; sfx('notify'); }
@@ -553,6 +601,7 @@ function fiUpdate() {
   }
   if (fi.phase === 'bite' && --fi.biteT <= 0) { fi.phase = 'idle'; fi.bob = null; s.streak = 0; fiSay('Trop tard… il s\'est échappé', '#ff4f6d'); sfx('error'); }
   if (fi.phase === 'fight') {
+    if (fi.holding && fi.tick % (fi.stam <= 0 ? 3 : 5) === 0) fiTone(1500 + Math.random() * 400, .02, 'square', .009);  // le moulinet
     const r = fiFightStep(fi.holding);
     fi.bob = {x: Math.max(110, Math.min(FI.W - 8, 100 + fi.D * (fi.target - 100) + fi.fx)), y: FI.WY + Math.sin(fi.tick / 3) * (fi.rush ? 2 : .6)};
     if (r === 'win') { fi.phase = 'landed'; fi.bob = null; fiLand(); }
@@ -725,7 +774,36 @@ function fiDex() {
     const where = f.spots.split('').map(k => FI_SPOTS[k].name).join(', ') + ' · ' + FI_TIMES[f.time] + (FI_WEATHER[f.weather] ? ' · ' + FI_WEATHER[f.weather] : '');
     det.append(img, el('b', '', d ? f.name : 'Espèce inconnue'), el('span', 'hint', FI_RARITY[f.rarity][0] + ' · ' + where), el('span', 'hint', d ? 'Pêché ' + d.n + ' fois · record ' + d.best + ' cm · taille ' + f.min + ' à ' + f.max + ' cm · vaut environ ' + fiValue(f, (f.min + f.max) / 2) + ' pièces' : 'Taille ' + f.min + ' à ' + f.max + ' cm · appâts préférés : ' + [...f.likes].map(k => FI_BAITS[k].name).join(', ')));
   } else det.append(el('span', 'hint', 'Clique une espèce pour voir où et quand la pêcher.'));
-  $('fiDex').replaceChildren(tabs, det, grid);
+  const A = aqSave(), kept = [...A.tanks.flatMap(t => t.fish || []), ...A.pool].filter(k => FISH[k.id]).slice(-24);
+  const tank = el('canvas', 'fiTank'); tank.width = 384; tank.height = 120; fiTankRun(tank, kept);
+  $('fiDex').replaceChildren(el('span', 'label', kept.length ? 'Ton aquarium : tes ' + kept.length + ' dernières prises nagent ici (clique un poisson pour sa fiche)' : 'Ton aquarium : tes prises viendront nager ici'), tank, tabs, det, grid);
+}
+function fiTankRun(cv, kept) {
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, r = seeded(kept.length * 31 + 7);
+  const fish = kept.map(k => { const f = FISH[k.id], a = fiArt(f); return {f, a, x: r() * (W - a.width), y: 10 + r() * (H - 30 - a.height), vx: (r() < .5 ? -1 : 1) * (.15 + r() * .3), ph: r() * 6}; });
+  const bubbles = Array.from({length: 14}, () => ({x: r() * W, y: r() * H, v: .2 + r() * .4}));
+  cv.onclick = e => { const b = cv.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * W, y = (e.clientY - b.top) / b.height * H;
+    const hit = fish.find(o => x >= o.x - 2 && x <= o.x + o.a.width + 2 && y >= o.y - 2 && y <= o.y + o.a.height + 2); if (hit) { fiDexSel = hit.f.id; fiDex(); } };
+  cv.__fish = fish;
+  let tick = 0;
+  const frame = () => {
+    if (!cv.isConnected) return; requestAnimationFrame(frame);
+    if (!view.classList.contains('on')) return; tick++;
+    g.imageSmoothingEnabled = false;
+    for (let y = 0; y < H; y += 4) { g.fillStyle = mixc('#1a6a8a', '#06203a', Math.round(y / H * 8) / 8); g.fillRect(0, y, W, 4); }
+    for (let i = 0; i < 5; i++) { const x0 = (i * 83 + tick * .05) % (W + 60) - 30; for (let y = 0; y < H - 14; y += 2) px(g, 'rgba(200,240,255,.06)', x0 + y * .35, y, 10 - y / 14, 2); }  // rayons de lumière
+    px(g, '#c8a86a', 0, H - 12, W, 12); for (let x = 0; x < W; x += 5) px(g, (x * 7) % 3 ? '#a8885a' : '#e8d098', x + (x * 13) % 3, H - 10 + (x * 11) % 8, 2, 1);
+    for (let i = 0; i < 9; i++) { const x0 = 12 + i * 44 + (i * 17) % 13, hh = 24 + (i * 29) % 30; for (let y = 0; y < hh; y++) px(g, y % 6 < 3 ? '#2a8a4a' : '#3aa85a', x0 + Math.round(Math.sin(y / 6 + tick / 40 + i) * 2), H - 12 - y, 2, 1); }  // algues
+    for (const p of bubbles) { p.y -= p.v; if (p.y < -3) { p.y = H - 12; p.x = Math.random() * W; } px(g, 'rgba(220,250,255,.5)', p.x + Math.sin(p.y / 8) * 1.5, p.y, 2, 2); }
+    for (const o of fish) {
+      o.x += o.vx; o.y += Math.sin(tick / 50 + o.ph) * .08;
+      if (o.x < 2 || o.x > W - o.a.width - 2) o.vx = -o.vx; else if (Math.random() < .002) o.vx = -o.vx;
+      const sel = o.f.id === fiDexSel, X = Math.round(o.x), Y = Math.round(o.y);
+      g.save(); if (o.vx < 0) { g.translate(X + o.a.width, Y); g.scale(-1, 1); } else g.translate(X, Y); g.drawImage(o.a, 0, 0); g.restore();
+      if (sel && (tick >> 4) % 2) { px(g, '#ffd07a', X - 2, Y - 3, o.a.width + 4, 1); px(g, '#ffd07a', X - 2, Y + o.a.height + 2, o.a.width + 4, 1); }
+    }
+  };
+  requestAnimationFrame(frame);  // le canevas n'entre dans la page qu'après replaceChildren
 }
 $('fiCanvas').onpointerdown = e => { e.preventDefault(); fiPress(true); const up = () => { fiPress(false); removeEventListener('pointerup', up); }; addEventListener('pointerup', up); };
 $('fiSpot').onchange = () => fiGo($('fiSpot').value);
@@ -733,10 +811,14 @@ $('fiBait').onchange = () => { fiSave().bait = $('fiBait').value; saveGames(); }
 $('fiShopBtn').onclick = () => { fiPanel = fiPanel === 'shop' ? '' : 'shop'; fiUi(); };
 $('fiDexBtn').onclick = () => { fiPanel = fiPanel === 'dex' ? '' : 'dex'; fiUi(); };
 $('fiQuestBtn').onclick = () => { fiPanel = fiPanel === 'quest' ? '' : 'quest'; fiUi(); };
+const fiSndLabel = () => { $('fiSndBtn').textContent = fiSave().mute ? 'SON : COUPÉ' : 'SON : OUI'; };
+$('fiSndBtn').onclick = () => { const s = fiSave(); s.mute = !s.mute; saveGames(); fiSndLabel(); if (!s.mute) fiAudio(); $('fiSndBtn').blur(); };
+$('fiFsBtn').onclick = () => { $('fiFsBtn').blur(); try { document.fullscreenElement ? document.exitFullscreen() : $('fiCanvas').parentElement.requestFullscreen?.().catch(() => {}); } catch {} };
 document.addEventListener('keydown', e => { if (!view.classList.contains('on') || !fi || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return; const k = e.key.toLowerCase(); if (['arrowleft', 'q', 'a'].includes(k)) { e.preventDefault(); fi.steer = -1; } if (['arrowright', 'd'].includes(k)) { e.preventDefault(); fi.steer = 1; } if (e.key === ' ') { e.preventDefault(); if (!e.repeat) fiPress(true); } if ((e.key === 'p' || e.key === 'Escape') && fi.mode === 'play') fi.mode = 'pause'; });
 document.addEventListener('keyup', e => { if (e.key === ' ' && fi) fiPress(false); const k = e.key.toLowerCase(); if (fi && (['arrowleft', 'q', 'a'].includes(k) && fi.steer < 0 || ['arrowright', 'd'].includes(k) && fi.steer > 0)) fi.steer = 0; });
 $('fiCanvas').onpointermove = e => { if (!fi || fi.phase !== 'fight' || !fi.holding || !e.pointerType.startsWith('mouse')) return; const r = e.currentTarget.getBoundingClientRect(), x = (e.clientX - r.left) / r.width; fi.steer = x < .38 ? -1 : x > .62 ? 1 : 0; };
-const fiOpen = () => fi ? (fiUi(), gameLoop(fi, 'neodex:fishing', fiUpdate, fiDraw)) : fiStart();
+const fiOpen = () => { fiSndLabel(); fi ? (fiUi(), gameLoop(fi, 'neodex:fishing', fiUpdate, fiDraw)) : fiStart(); };
+$('fiCanvas').__fi = {st: () => fi, snd: () => ({ac: !!fiAc, amb: fiAmb ? fiAmb.g.gain.value : 0, mus: fiMusN, n: fiSndN}), keep: (id, cm) => { aqKeep(id, cm); saveGames(); }, plouf: () => fiPlouf(true)};
 
 const aqSave = () => gstore('aquarium', {tanks: [{water: 'douce', size: 0, filter: false, feeder: false, decor: [], food: 100, dirt: 0, fish: []}], pool: [], cash: 0, last: Date.now(), gift: false, earned: 0, visitors: 0, seq: 1});
 const aqKeep = (id, cm) => { const s = aqSave(); s.pool.push({id, cm, k: s.seq++}); if (s.pool.length > 60) s.pool.shift(); };

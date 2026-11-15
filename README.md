@@ -50,6 +50,18 @@ Un poisson se vend selon sa rareté, sa taille par rapport à son espèce et le 
 - **Défis** : trois défis par jour, à récompense en pièces (pêcher un nombre de poissons, un poisson rare, réussir des ferrages parfaits, une prise presque à la taille maximale, une nouvelle espèce, une série, des poissons la nuit, un coffre).
 - **Niveau de pêcheur** : chaque prise donne de l'expérience (plus pour un poisson rare, une nouvelle espèce ou un ferrage parfait). Chaque niveau remonte un peu plus vite et attire un peu plus les poissons rares.
 
+## Sons et musique
+
+Le moulinet cliquette quand tu remontes, le bouchon fait plouf, l'eau clapote (plus fort sous la pluie et à la rivière), les oiseaux chantent le jour et une musique douce accompagne la pêche, plus calme la nuit. Le bouton **Son** coupe tout ou le remet.
+
+## L'aquarium
+
+En haut de la **Collection**, tes dernières prises nagent dans un aquarium. Clique un poisson pour ouvrir sa fiche : il clignote dans l'aquarium tant qu'il est choisi.
+
+## Plein écran
+
+Le bouton **Plein écran** agrandit le lac à tout l'écran (Échap pour en sortir).
+
 ## Données et synchronisation
 
 Toute la partie (pièces, matériel, lieux, collection, défis, niveau et heure du jeu) est enregistrée par NeoDex, sauvegardée et synchronisée entre tes PC si la synchro est activée. Au premier lancement, le plugin reprend ce que tu avais déjà dans NeoDex.
