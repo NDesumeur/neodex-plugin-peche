@@ -1,7 +1,7 @@
 // Pêche : ton appli d'origine (HTML et code inchangés), livrée en plugin.
 // Ses données sont dans le dossier du plugin, que NeoDex sauvegarde (synchro cloud et sauvegardes) ; à la première ouverture elle reprend ce que tu avais dans NeoDex.
 // Elle tourne dans le bac à sable de NeoDex, avec ses outils d'interface (ctx.host) et seulement les autorisations de son plugin.json.
-const HTML = "<div class=\"appWrap wide\">\n      <div class=\"agHead\"><span class=\"label\">Pêche</span><span class=\"hint\" id=\"fiInfo\"></span><div class=\"agNav\"><select class=\"f gSel\" id=\"fiSpot\"></select><select class=\"f gSel\" id=\"fiBait\"></select><button class=\"btn px\" id=\"fiShopBtn\">BOUTIQUE</button><button class=\"btn px\" id=\"fiDexBtn\">COLLECTION</button><button class=\"btn px\" id=\"fiQuestBtn\">DÉFIS</button><button class=\"btn px\" id=\"fiSndBtn\">SON</button><button class=\"btn px\" id=\"fiFsBtn\">PLEIN ÉCRAN</button></div></div>\n      <div class=\"gameBox g169\"><canvas id=\"fiCanvas\" width=\"384\" height=\"216\"></canvas></div>\n      <div id=\"fiShop\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiDex\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiQuest\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div class=\"hint\">Maintiens clic ou espace pour doser le lancer, attends la vraie touche (pas les frémissements) et clique vite : un ferrage parfait fatigue déjà le poisson. Maintiens pour remonter, relâche quand il tire ou saute, et contre ses départs avec ← → (ou la souris). Niveau de pêcheur, défis du jour, séries de prises et trésors. Chaque espèce a ses lieux, ses heures, sa météo et ses appâts. La partie est sauvegardée et synchronisée.</div>\n    </div>";
+const HTML = "<div class=\"appWrap wide\">\n      <div class=\"agHead\"><span class=\"label\">Pêche</span><span class=\"hint\" id=\"fiInfo\"></span><div class=\"agNav\"><select class=\"f gSel\" id=\"fiSpot\"></select><select class=\"f gSel\" id=\"fiBait\"></select><button class=\"btn px\" id=\"fiSndBtn\">SON</button><button class=\"btn px\" id=\"fiFsBtn\">PLEIN ÉCRAN</button></div></div>\n      <div class=\"gameBox g169\"><canvas id=\"fiCanvas\" width=\"384\" height=\"216\"></canvas></div>\n      <div class=\"row fiTabs fiMain\"><button class=\"btn px\" id=\"fiShopBtn\">BOUTIQUE</button><button class=\"btn px\" id=\"fiCraftBtn\">ATELIER</button><button class=\"btn px\" id=\"fiDexBtn\">COLLECTION</button><button class=\"btn px\" id=\"fiQuestBtn\">DÉFIS</button><button class=\"btn px\" id=\"fiVillageBtn\">VILLAGE</button><button class=\"btn px\" id=\"fiTournBtn\">TOURNOI</button></div>\n      <div id=\"fiCraft\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiVillage\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiTourn\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiShop\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiDex\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div id=\"fiQuest\" class=\"fiPanel\" style=\"display:none\"></div>\n      <div class=\"hint\">Maintiens clic ou espace pour doser le lancer, attends la vraie touche (pas les frémissements) et clique vite : un ferrage parfait fatigue déjà le poisson. Maintiens pour remonter, relâche quand il tire ou saute, et contre ses départs avec ← → (ou la souris). Niveau de pêcheur, défis du jour, séries de prises et trésors. Chaque espèce a ses lieux, ses heures, sa météo et ses appâts ; certaines suivent les vraies saisons et la vraie lune. Les trouvailles servent à fabriquer des appâts à l'atelier, les pêcheurs du village racontent leurs légendes, et un tournoi a lieu chaque semaine. La partie est sauvegardée et synchronisée.</div>\n    </div>";
 /*CSS-MOVED*/ const CSS = `.gameBox{display:grid;place-items:center;padding:10px;background:#05010b;box-shadow:0 0 0 3px var(--line2)}
 .gameBox canvas{width:min(100%,1152px);aspect-ratio:384/144;image-rendering:pixelated;cursor:var(--cp,pointer)}
 .gameBox.tall canvas{width:auto;height:min(720px,72vh);aspect-ratio:240/320}
@@ -10,6 +10,13 @@ const HTML = "<div class=\"appWrap wide\">\n      <div class=\"agHead\"><span cl
 #fiQuest .fiItem.done{--c:#2f8f5a;opacity:.85}
 .fiPanel{display:flex;flex-direction:column;gap:14px}
 .fiItem .btn{height:36px;font-size:15px;margin-top:auto}
+.fiMain{flex-wrap:wrap;gap:8px;justify-content:center}
+.fiNpc{flex-direction:row;gap:16px;align-items:flex-start}
+.fiNpc img{width:72px;height:72px;image-rendering:pixelated;flex:none}
+.fiNpc .hint{display:block}
+.fiNpc q{font-style:italic;display:block;margin:6px 0}
+.fiBoard{display:grid;grid-template-columns:auto 1fr auto;gap:6px 16px;font-size:16px;align-items:center}
+.fiBoard .me{color:var(--accent,#ffd07a);font-weight:bold}
 .fiTabs .btn{height:34px;font-size:14px;padding:0 10px}
 .fiGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
 .fiCell{--fill:var(--win);--c:var(--line);border:0;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:var(--cp,pointer);color:#fff;font:14px var(--text);min-height:96px;justify-content:center}
@@ -226,7 +233,10 @@ Morue arctique|B|*|*|2|40-100|g|987,eed,775|-|pv
 Lompe des glaces|B|N|*|3|10-30|h|9ac,def,6bd|-|pv
 Anguille lanterne|A|N|*|3|40-120|l|235,5f9,4fa|n|k
 Baudroie fantôme|A|N|*|4|40-120|c|333,a6c,f9f|n|k
-Poisson-hache cristal|A|*|*|3|8-20|y|79c,cff,9ef|n|pv`;
+Poisson-hache cristal|A|*|*|3|8-20|y|79c,cff,9ef|n|pv
+Vieux brochet|L|A|*|5|150-190|g|575,cc8,797|d|l
+Carpe-lune|E|N|*|5|110-150|h|cce,fff,eec|n|p
+Roi des glaces|B|N|N|5|400-700|s|9bd,eff,cdf|n|k`;
 const FI_SPOTS = {
   E: {name: 'Étang des saules', price: 0, water: ['#3d6e7a', '#244a58', '#102632'], sky: 1, shore: 'wood', decor: 'saules', weather: {clair: 4, nuageux: 3, pluie: 2, orage: .5, brouillard: 1}},
   R: {name: 'Rivière claire', price: 600, water: ['#4a8a96', '#2b6070', '#14343f'], shore: 'wood', decor: 'collines', flow: true, weather: {clair: 4, nuageux: 3, pluie: 2.5, orage: .6, brouillard: 1}},
@@ -262,6 +272,123 @@ const FISH = FI_DATA.trim().split('\n').map((line, id) => {
 });
 console.assert(FISH.length >= 100 && FISH.every(f => f.spots && f.max >= f.min && FI_RARITY[f.rarity]), 'FISH: 100+ well-formed species');
 console.assert(Object.keys(FI_SPOTS).every(s => [...'JAN'].every(t => FISH.some(f => f.spots.includes(s) && f.rarity < 5 && f.weather === '*' && (f.time === '*' || f.time.includes(t))))), 'FISH: every place has something to catch at every hour');
+
+/* ---------- real seasons and moon, weather that changes the fishing ---------- */
+// a species can prefer seasons (P printemps, E été, A automne, H hiver) and a moon (L full, O new; it only counts at night)
+const FI_COND = {'Tanche': 'E', 'Carpe koï': 'PE', 'Amour blanc': 'E', 'Black-bass': 'E', 'Bouvière': 'P', 'Silure glane': 'E', 'Sandre': 'A', 'Brochet': 'AH', 'Carpe céleste': 'L',
+  'Truite fario': 'PA', 'Ombre commun': 'H', 'Saumon atlantique': 'A', 'Lamproie': 'P', 'Aspe': 'P', 'Brochet fantôme': 'O', 'Truite dorée': 'E', 'Huchon': 'H', 'Truite marbrée': 'P',
+  'Lotte de rivière': 'H', 'Dragon des cimes': 'H', 'Cabillaud': 'H', 'Congre': 'O', 'Thon rouge': 'E', 'Espadon': 'E', 'Léviathan d\'argent': 'O', 'Hippocampe': 'P', 'Raie manta': 'E',
+  'Coryphène': 'E', 'Poisson-lion': 'E', 'Murène javanaise': 'O', 'Poisson-globe': 'L', 'Dragon de corail': 'L', 'Requin du Groenland': 'H', 'Saumon rouge': 'A', 'Léviathan des glaces': 'H',
+  'Calmar géant': 'O', 'Kraken': 'O', 'Poisson-NeoDex': 'L', 'Anguille lanterne': 'O'};
+const FI_SEASONS = {P: 'Printemps', E: 'Été', A: 'Automne', H: 'Hiver'};
+const fiSeason = (d = new Date()) => 'HHPPPEEEAAAH'[d.getMonth()];  // the real season, by month (northern hemisphere)
+const fiMoon = (t = Date.now()) => (((t / 864e5 - 10962.76) / 29.530589) % 1 + 1) % 1;  // the real moon: 0 new, .5 full (reference: new moon of 6 January 2000)
+const fiMoonKind = (p = fiMoon()) => Math.abs(p - .5) < .12 ? 'L' : p < .12 || p > .88 ? 'O' : '';
+const fiMoonName = (p = fiMoon()) => p < .03 || p > .97 ? 'Nouvelle lune' : p < .22 ? 'Premier croissant' : p < .28 ? 'Premier quartier' : p < .47 ? 'Lune gibbeuse' : p < .53 ? 'Pleine lune' : p < .72 ? 'Lune gibbeuse' : p < .78 ? 'Dernier quartier' : 'Dernier croissant';
+function fiCondMul(f) {  // ×3 in its season, ×0.25 out of it; ×4 under its moon at night, ×0.3 otherwise
+  const c = FI_COND[f.name]; if (!c) return 1;
+  const sea = c.replace(/[LO]/g, ''), moon = c.replace(/[^LO]/g, ''); let m = 1;
+  if (sea) m *= sea.includes(fiSeason()) ? 3 : .25;
+  if (moon) m *= moon.includes(fiMoonKind()) && fiPhase(fiHour()) === 'N' ? 4 : .3;
+  return m;
+}
+const fiCondText = f => { const c = FI_COND[f.name] || '', sea = [...c.replace(/[LO]/g, '')].map(k => FI_SEASONS[k].toLowerCase()); return [sea.length ? 'surtout en ' + sea.join(' et ') : '', c.includes('L') ? 'surtout par pleine lune' : c.includes('O') ? 'surtout par nouvelle lune' : ''].filter(Boolean).join(' · '); };
+// weather: how fast it bites, how often the rare fish come, and how hard the fish pull
+const FI_WFX = {clair: {wait: 1.1, rare: 1, T: 1}, nuageux: {wait: .95, rare: 1.1, T: 1}, pluie: {wait: .8, rare: 1.25, T: 1}, orage: {wait: .7, rare: 1.7, T: 1.2}, brouillard: {wait: .9, rare: 1.15, T: 1, calm: true}, neige: {wait: 1.2, rare: 1.35, T: 1}};
+const FI_SEASON_W = {P: {pluie: 1.3}, E: {orage: 1.8, clair: 1.3}, A: {brouillard: 2, pluie: 1.4}, H: {orage: .3}};
+
+/* ---------- gear: the setup changes which fish come and how the fight goes ---------- */
+const FI_GEAR = {
+  std: {name: 'Montage polyvalent', price: 0, about: 'Équilibré, pour toutes les pêches.', small: 1, big: 1, str: 1, reel: 1, win: 0},
+  leger: {name: 'Canne légère', price: 700, about: 'Petits poissons ×2, moulinet rapide, plus de temps pour ferrer ; un gros poisson casse vite le fil.', small: 2.2, big: .35, str: .7, reel: 1.35, win: 12},
+  lourd: {name: 'Moulinet lourd', price: 3000, about: 'Monstres de plus d\'un mètre ×2,5, fil très solide, remontée lente ; les petits se décrochent souvent.', small: .45, big: 2.5, str: 1.7, reel: .75, win: -6},
+};
+const fiGear = () => FI_GEAR[fiSave().gear] || FI_GEAR.std;
+const fiSizeMul = (f, g = fiGear()) => f.max <= 40 ? g.small : f.max >= 100 ? g.big : 1;
+
+/* ---------- what you find while fishing, and the baits made from it ---------- */
+const FI_MATS = {ecaille: 'Écailles', plume: 'Plumes', algue: 'Algues', coquille: 'Coquillages', luciole: 'Lucioles', glace: 'Cristaux de glace', ecd: 'Écaille dorée', perle: 'Perle de lune', dent: 'Dent de glace'};
+const FI_FINDS = {E: ['plume', 'algue'], R: ['plume', 'algue'], L: ['plume', 'algue'], C: ['coquille', 'algue'], T: ['coquille', 'algue'], B: ['glace', 'coquille'], A: ['luciole', 'coquille']};
+Object.assign(FI_BAITS, {  // crafted at the workshop; fx multiplies how often a species bites
+  m: {name: 'Mouche en plumes', craft: {plume: 3, ecaille: 1}, pack: 10, wait: .85, about: 'Rares ×1,8 en rivière et au lac, le jour.', fx: (f, s, h) => 'RL'.includes(s.spot) && fiPhase(h) !== 'N' && f.rarity >= 3 ? 1.8 : 1},
+  e: {name: 'Pâte d\'écailles', craft: {ecaille: 6}, pack: 12, wait: .9, about: 'Les poissons qui mordent sont plus gros.', big: true},
+  o: {name: 'Leurre nacré', craft: {coquille: 3, algue: 2}, pack: 10, wait: .75, about: 'Rares ×1,6 en mer, touches plus rapides.', fx: (f, s) => 'CTB'.includes(s.spot) && f.rarity >= 3 ? 1.6 : 1},
+  u: {name: 'Appât de lune', craft: {luciole: 3, ecaille: 2}, pack: 8, wait: .8, about: 'Rares ×2 la nuit, ×3 sous la pleine lune.', fx: f => fiPhase(fiHour()) === 'N' && f.rarity >= 3 ? (fiMoonKind() === 'L' ? 3 : 2) : 1},
+  i: {name: 'Appât givré', craft: {glace: 3, coquille: 1}, pack: 8, wait: .85, about: 'Rares ×2 quand il neige ou en hiver.', fx: (f, s) => (s.weather === 'neige' || fiSeason() === 'H') && f.rarity >= 3 ? 2 : 1},
+  x: {name: 'Grenouille d\'or', craft: {ecd: 1, plume: 2, ecaille: 4}, pack: 3, wait: 1, legend: 'brochet', about: 'Le seul appât du vieux brochet.'},
+  y: {name: 'Boulette de lune', craft: {perle: 1, luciole: 2, ecaille: 3}, pack: 3, wait: 1, legend: 'carpe', about: 'Le seul appât de la carpe-lune.'},
+  z: {name: 'Hareng givré', craft: {dent: 1, glace: 4, ecaille: 3}, pack: 3, wait: 1, legend: 'roi', about: 'Le seul appât du roi des glaces.'},
+});
+const fiRecipe = b => Object.entries(b.craft).map(([m, n]) => n + ' ' + FI_MATS[m].toLowerCase()).join(', ');
+
+/* ---------- the legends of the village: a story in steps, then a fight in three phases ---------- */
+// steps: 0 catch some fish there, 1 find its trace, 2 craft its bait, 3 hook it, 4 done
+const FI_LEGENDS = {
+  brochet: {fish: 'Vieux brochet', spot: 'L', npc: 'Gaston', who: 'le doyen du village', lv: 2, rod: 2, time: 'A', weather: 'C', moon: '', bait: 'x', item: 'ecd', catch: {names: ['Brochet'], n: 3}, face: ['#8a8a9a', '#c8b8a0', '#5a4a3a'],
+    cond: 'à l\'aube ou au crépuscule, quand le ciel est couvert (nuages, pluie, orage ou brouillard)', reward: 5000, lines: [
+      'Tu connais l\'histoire du vieux brochet du lac ? Il vit au Lac de montagne depuis plus longtemps que moi. Mon père l\'a ferré une fois : il a cassé sa canne en deux. Va pêcher des brochets là-haut, ils te diront où il chasse.',
+      'Regarde ces brochets : ils ont des traces de dents sur le dos. Ce sont les siennes. Il chasse à l\'aube et au crépuscule. Pêche au lac à ces heures-là : s\'il passe près de ta ligne, il perdra peut-être une écaille dorée.',
+      'Une écaille dorée ! Il est bien vivant. Il ne mord qu\'à une grenouille d\'or : deux plumes, quatre écailles et son écaille pour qu\'il la sente. Fabrique-la à l\'atelier.',
+      'Monte au lac à l\'aube ou au crépuscule, quand le ciel est couvert, et lance loin. Il se bat en trois temps : il plonge, il saute, puis il donne tout ce qui lui reste. Ne tire pas quand il saute.',
+      'Tu l\'as sorti ! Personne au village ne l\'avait jamais vu en entier. Je vais le raconter à tout le monde, et ton nom avec.']},
+  carpe: {fish: 'Carpe-lune', spot: 'E', npc: 'Mireille', who: 'la gardienne de l\'étang', lv: 4, rod: 2, time: 'N', weather: '', moon: 'G', bait: 'y', item: 'perle', catch: {names: ['Carpe commune', 'Carpe miroir', 'Carpe koï'], n: 5}, face: ['#c86a3a', '#f0c8a0', '#3a6a5a'],
+    cond: 'la nuit, quand la lune est plus qu\'à moitié pleine', reward: 4000, lines: [
+      'Les nuits de lune, je vois une lueur sous l\'eau de l\'étang. Les anciens l\'appellent la carpe-lune. Pêche des carpes ici : elles nagent avec elle.',
+      'Tes carpes sentent la lune… Elle est passée tout près. La nuit, elle laisse parfois une perle de lune derrière elle. Pêche à l\'étang après le coucher du soleil.',
+      'Une perle de lune ! Mélange-la avec deux lucioles et trois écailles : une boulette de lune, c\'est la seule chose qu\'elle mange.',
+      'Reviens à l\'étang la nuit, quand la lune est plus qu\'à moitié pleine : regarde-la dans le ciel. Elle plonge, elle saute, puis elle se débat de toutes ses forces.',
+      'Elle brille encore dans ta main… Je savais qu\'elle existait. Merci de me l\'avoir montrée.']},
+  roi: {fish: 'Roi des glaces', spot: 'B', npc: 'Ivar', who: 'le vieux marin', lv: 6, rod: 3, time: 'N', weather: 'N', moon: '', bait: 'z', item: 'dent', catch: {rarity: 3, n: 3}, face: ['#3a4a6a', '#e0c0a8', '#d0d0e0'],
+    cond: 'la nuit, quand il neige', reward: 9000, lines: [
+      'Sur la banquise, j\'ai vu une ombre plus grande que mon bateau passer sous la glace. Le roi des glaces. Ramène-moi trois poissons rares de là-bas : il ne chasse que les meilleurs.',
+      'Ces poissons ont des marques de givre. Il rôde. Pêche sur la banquise la nuit, quand il neige : il casse parfois une dent sur la glace.',
+      'Une dent de glace, longue comme mon bras ! Avec quatre cristaux de glace et trois écailles, fais un hareng givré. C\'est son repas préféré.',
+      'Retourne sur la banquise la nuit, sous la neige. Prends une canne solide : il plonge, il saute, puis il frappe de tous les côtés.',
+      'Le roi des glaces ! Je pourrai enfin dire au port que je ne rêvais pas.']},
+};
+const fiLegendOf = f => Object.keys(FI_LEGENDS).find(k => FI_LEGENDS[k].fish === f.name);
+const fiLegendFish = k => FISH.find(f => f.name === FI_LEGENDS[k].fish);
+const fiMoonOk = m => !m || (m === 'G' ? Math.abs(fiMoon() - .5) < .25 : m.includes(fiMoonKind()));
+const fiLegendCondOk = (L, s = fiSave()) => s.spot === L.spot && fiTimeOk({time: L.time}, fiHour()) && fiLegendWeatherOk(L, s.weather) && fiMoonOk(L.moon);
+const fiLegendState = k => (fiSave().legends[k] ??= {step: 0, got: 0});
+const fiLegendOpen = k => fiLevel().lv >= FI_LEGENDS[k].lv;
+console.assert(Object.keys(FI_COND).every(n => FISH.some(f => f.name === n)) && Object.keys(FI_LEGENDS).every(k => fiLegendFish(k)), 'FI_COND and FI_LEGENDS: names exist');
+
+/* ---------- the weekly tournament against the village ---------- */
+const FI_TOURN = {big: 'La plus grosse prise', count: 'Le plus de prises', species: 'Le plus d\'espèces différentes', value: 'Le plus de pièces gagnées'};
+const FI_RIVALS = [['Gaston', '#8a8a9a', '#c8b8a0', '#5a4a3a'], ['Mireille', '#c86a3a', '#f0c8a0', '#3a6a5a'], ['Ivar', '#3a4a6a', '#e0c0a8', '#d0d0e0'], ['Paulo', '#2a2a2a', '#c89870', '#c84a3a'], ['Rosa', '#6a3a8a', '#f0d0b0', '#e0a030']];
+function fiWeekStart(d = new Date()) { const t = new Date(d.getFullYear(), d.getMonth(), d.getDate()); t.setDate(t.getDate() - (t.getDay() + 6) % 7); return t; }  // Monday 00:00
+const fiWeekKey = (d = new Date()) => { const t = fiWeekStart(d); return t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate(); };
+function fiTourn() {
+  const s = fiSave(), wk = fiWeekKey();
+  if (s.tourn?.week !== wk) {
+    if (s.tourn && !s.tourn.paid) fiTournPay(s.tourn);
+    const r = seeded([...wk].reduce((a, c) => a * 31 + c.charCodeAt(0) | 0, 7)), kind = Object.keys(FI_TOURN)[Math.floor(r() * 4)], spot = s.spots[Math.floor(r() * s.spots.length)];
+    s.tourn = {week: wk, kind, spot, score: 0, seen: [], lv: fiLevel().lv, paid: false, seed: Math.floor(r() * 1e9)};
+  }
+  return s.tourn;
+}
+function fiRivalFinal(t) {  // what each rival will have at the end of the week
+  const r = seeded(t.seed), lvk = 1 + t.lv * .05, sk = 1 + 'ERLCTBA'.indexOf(t.spot) * .25, here = FISH.filter(f => f.spots.includes(t.spot) && f.rarity < 5).sort((a, b) => a.max - b.max);
+  return FI_RIVALS.map((_, i) => {
+    const j = .75 + r() * .4;
+    if (t.kind === 'big') return Math.round(here[Math.min(here.length - 1, Math.floor(here.length * [.45, .6, .72, .82, .9][i]))].max * (.7 + r() * .25));
+    if (t.kind === 'count') return Math.round([6, 11, 16, 23, 30][i] * lvk * j);
+    if (t.kind === 'species') return Math.min(here.length - 2, Math.round([3, 5, 7, 9, 12][i] * j));
+    return Math.round([250, 500, 850, 1400, 2100][i] * lvk * sk * j);
+  });
+}
+function fiRivalNow(t, at = Date.now()) { const k = Math.max(0, Math.min(1, (at - fiWeekStart(new Date(at))) / (7 * 864e5))); return fiRivalFinal(t).map(v => Math.floor(v * (t.kind === 'big' ? Math.min(1, .55 + k * .6) : k))); }
+const fiTournRank = (t, scores) => 1 + scores.filter(v => v > t.score).length;
+function fiTournPay(t) {
+  const s = fiSave(), rank = t.score > 0 ? fiTournRank(t, fiRivalFinal(t)) : 6, prize = t.score > 0 ? Math.round([2000, 1000, 500, 200, 100, 50][rank - 1] * (1 + 'ERLCTBA'.indexOf(t.spot) * .3) / 10) * 10 : 0;
+  t.paid = true; s.money += prize; s.earned += prize;
+  if (rank <= 3) { s.trophies[rank - 1]++; for (const m of FI_FINDS[t.spot]) s.mats[m] = (s.mats[m] || 0) + (4 - rank) * 2; s.mats.ecaille = (s.mats.ecaille || 0) + (4 - rank) * 3; }
+  s.tournHist.push({week: t.week, kind: t.kind, spot: t.spot, rank, score: t.score, prize}); if (s.tournHist.length > 8) s.tournHist.shift();
+  fiTournNews = 'Tournoi de la semaine passée (' + FI_TOURN[t.kind].toLowerCase() + ') : ' + (t.score > 0 ? fiRankTxt(rank) + ' place · +' + prize + ' pièces' : 'tu n\'as rien pêché là-bas');
+}
+let fiTournNews = '';
+const fiTournScore = (t, v) => t.kind === 'big' ? (v >= 100 ? (v / 100).toFixed(2) + ' m' : v + ' cm') : t.kind === 'value' ? v + ' pièces' : t.kind === 'species' ? v + ' espèce' + (v > 1 ? 's' : '') : v + ' prise' + (v > 1 ? 's' : '');
 
 /* ---------- species drawn by code: a body outline per shape, fins, shading, pattern and eye; cached as small canvases ---------- */
 const mixc = (a, b, k) => { const p = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)), x = p(a), y = p(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
@@ -361,21 +488,23 @@ const fiArtUrl = (f, s, scale = 3) => { const key = f.id + ',' + !!s + ',' + sca
 
 /* ---------- the save ---------- */
 let fi = null;
-const fiSave = () => gstore('fish', {money: 0, rod: 0, baits: {}, bait: 'p', spots: ['E'], spot: 'E', dex: {}, clock: 8 * 60, weather: 'clair', wUntil: 11 * 60, total: 0, earned: 0, best: null, xp: 0, streak: 0, perfect: 0, chests: 0, quests: null});
+const fiSave = () => { const s = gstore('fish', {money: 0, rod: 0, baits: {}, bait: 'p', spots: ['E'], spot: 'E', dex: {}, clock: 8 * 60, weather: 'clair', wUntil: 11 * 60, total: 0, earned: 0, best: null, xp: 0, streak: 0, perfect: 0, chests: 0, quests: null}); s.mats ??= {}; s.legends ??= {}; s.gears ??= ['std']; s.gear ??= 'std'; s.tournHist ??= []; s.trophies ??= [0, 0, 0]; return s; };
 const fiHour = () => (fiSave().clock / 60) % 24;
 const fiPhase = h => h >= 5 && h < 8 ? 'A' : h >= 8 && h < 18 ? 'J' : h >= 18 && h < 21 ? 'A' : 'N';
 const fiPhaseName = h => h >= 5 && h < 8 ? 'Aube' : h >= 8 && h < 18 ? 'Jour' : h >= 18 && h < 21 ? 'Crépuscule' : 'Nuit';
 const FI_WNAMES = {clair: 'Ciel clair', nuageux: 'Nuageux', pluie: 'Pluie', orage: 'Orage', brouillard: 'Brouillard', neige: 'Neige'};
 function fiNewWeather() {
-  const s = fiSave(), opts = Object.entries(FI_SPOTS[s.spot].weather); let r = Math.random() * opts.reduce((a, o) => a + o[1], 0);
+  const s = fiSave(), sea = fiSeason(), w = {...FI_SPOTS[s.spot].weather};
+  if (sea === 'H' && !'TA'.includes(s.spot)) w.neige = w.neige || 1.2;  // in winter it snows everywhere but the lagoon and the deep sea
+  const opts = Object.entries(w).map(([k, v]) => [k, v * (FI_SEASON_W[sea][k] || 1)]); let r = Math.random() * opts.reduce((a, o) => a + o[1], 0);
   s.weather = opts.find(o => (r -= o[1]) < 0)[0]; s.wUntil = s.clock + 120 + Math.floor(Math.random() * 240);
 }
 const fiWeatherOk = (f, w) => f.weather === '*' || (f.weather === 'P' && (w === 'pluie' || w === 'orage')) || (f.weather === 'S' && w === 'clair') || (f.weather === 'N' && w === 'neige');
 const fiTimeOk = (f, h) => f.time === '*' || f.time.includes(fiPhase(h));
 function fiPick(power) {  // which fish bites: place, hour, weather, bait, rod and how far you cast
   const s = fiSave(), h = fiHour(), rod = FI_RODS[s.rod];
-  const pool = FISH.filter(f => f.spots.includes(s.spot) && fiTimeOk(f, h) && fiWeatherOk(f, s.weather) && (f.rarity < 5 || s.rod >= 3));
-  const ws = pool.map(f => FI_RARITY[f.rarity][2] * (f.likes.includes(s.bait) ? 2.6 : 1) * (f.rarity >= 3 ? (1 + (rod.luck + fiLevel().luck) * f.rarity) * (.6 + power * .8) : 1));
+  const pool = FISH.filter(f => f.spots.includes(s.spot) && fiTimeOk(f, h) && fiWeatherOk(f, s.weather) && (f.rarity < 5 || s.rod >= 3) && !fiLegendOf(f)), b = FI_BAITS[s.bait], W = FI_WFX[s.weather] || FI_WFX.clair, G = fiGear();
+  const ws = pool.map(f => FI_RARITY[f.rarity][2] * (f.likes.includes(s.bait) ? 2.6 : 1) * (f.rarity >= 3 ? (1 + (rod.luck + fiLevel().luck) * f.rarity) * (.6 + power * .8) * W.rare : 1) * fiCondMul(f) * fiSizeMul(f, G) * (b.fx ? b.fx(f, s, h) : 1));
   let r = Math.random() * ws.reduce((a, b) => a + b, 0);
   return pool[ws.findIndex(w => (r -= w) < 0)] || pool[0];
 }
@@ -446,7 +575,7 @@ function fiDecor(spot) {  // the far landscape, drawn once per place
 function fiStart() {
   fi = fi || {raf: 0};
   const s = fiSave();
-  Object.assign(fi, {g: $('fiCanvas').getContext('2d'), mode: 'play', tick: 0, phase: 'idle', power: 0, bob: null, msg: null, shadows: [], rain: [], decor: fiDecor(s.spot), decorSpot: s.spot, flash: 0, card: null, holding: false,
+  Object.assign(fi, {g: $('fiCanvas').getContext('2d'), mode: 'play', tick: 0, phase: 'idle', power: 0, bob: null, msg: null, shadows: [], rain: [], decor: fiDecor(s.spot), decorSpot: s.spot, flash: 0, card: null, holding: false, leaves: [],
     stars: Array.from({length: 80}, () => [Math.random() * FI.W, Math.random() * 80, Math.random()]), clouds: Array.from({length: 6}, () => [Math.random() * FI.W, 8 + Math.random() * 40, 20 + Math.random() * 30])});
   for (let i = 0; i < 6; i++) fi.shadows.push({x: 130 + Math.random() * 240, y: FI.WY + 20 + Math.random() * 80, vx: (Math.random() - .5) * .3, w: 8 + Math.random() * 16});
   fiUi(); gameLoop(fi, 'neodex:fishing', fiUpdate, fiDraw);
@@ -507,6 +636,8 @@ function fiPress(down) {
     fi.phase = 'charge'; fi.power = 0; fi.pdir = 1; return;
   }
   if (fi.phase === 'charge' && !down) {  // release: cast
+    const lb = FI_BAITS[s.bait].legend, L = lb && FI_LEGENDS[lb];
+    if (L && !(fiLegendState(lb).step === 3 && fiLegendCondOk(L, s) && s.rod >= L.rod)) { fi.phase = 'idle'; fiSay(L.npc + ' : « ' + (s.rod < L.rod ? 'Il te faut au moins la ' + FI_RODS[L.rod].name.toLowerCase() : 'Il ne vient qu\'au ' + FI_SPOTS[L.spot].name + ', ' + L.cond) + '. »', '#ffd07a', 260); return; }
     fi.phase = 'cast'; fi.castT = 0; fi.target = 120 + fi.power * 245; fi.castPower = fi.power; sfx('click');
     if (s.bait !== 'p') { s.baits[s.bait]--; fiUi(); }
     return;
@@ -516,25 +647,27 @@ function fiPress(down) {
   if (fi.phase === 'bite' && down) {  // strike in time: the fight starts
     const f = fi.fish, k = (fi.cm - f.min) / Math.max(1, f.max - f.min);
     const perfect = fi.biteMax - fi.biteT <= 14;  // struck within a quarter of a second
+    if (!fi.special && !fi.legend && s.gear === 'lourd' && f.max <= 40 && Math.random() < .35) { fi.phase = 'idle'; fi.bob = null; s.streak = 0; fiSay('Trop petit pour ce gros hameçon : il s\'est décroché', '#ffd07a', 160); sfx('error'); return; }
     fi.phase = 'fight'; fi.T = .35; fi.D = .35 + fi.castPower * .65; fi.slack = 0; fi.rush = false; fi.rushT = 60; fi.stam = perfect ? .75 : 1; fi.perfect = perfect;
     fi.S = fi.special ? .25 : .3 + f.rarity * .13 + k * .15 + ('sey'.includes(f.shape) ? .1 : 0); fi.erratic = 'lc'.includes(f.shape) ? 1.6 : 1;
     fi.dir = 0; fi.dirT = 40; fi.fx = 0; fi.jump = 0; fi.jumpy = !fi.special && 'fgseaw'.includes(f.shape) && f.min >= 25; fi.steer = fi.steer || 0;
+    if (fi.legend) Object.assign(fi, {lphase: 1, S: 1.1, erratic: 1, jumpy: false, pull: 1.8, jumpP: .4, D: .95});
     if (perfect) { fi.D -= .08; s.perfect = (s.perfect || 0) + 1; fiQuestEvent('perfect'); }
-    sfx('open'); fiSay(perfect ? 'FERRAGE PARFAIT ! Il est déjà fatigué' : 'Ferré ! Maintiens pour remonter, contre ses départs avec ← →', perfect ? '#8ee8a0' : '#ffd07a', 140); return;
+    sfx('open'); if (fi.legend) return fiSay('LA LÉGENDE ! Phase 1 : elle plonge vers le fond, ne la laisse pas filer', '#ffd07a', 220); fiSay(perfect ? 'FERRAGE PARFAIT ! Il est déjà fatigué' : 'Ferré ! Maintiens pour remonter, contre ses départs avec ← →', perfect ? '#8ee8a0' : '#ffd07a', 140); return;
   }
 }
 // One 1/60 s step of the fight; returns 'win', 'break', 'escape' or null. The fish runs left or right: pulling the other way
 // (← → or the mouse) reels faster with less tension and tires it; pulling the same way strains the line. Big sporty fish jump:
 // hold during a jump and the tension soars, give slack and it tires. A worn-out fish (no stamina left) comes in fast.
 function fiFightStep(hold) {
-  const rod = FI_RODS[fiSave().rod], lv = fiLevel(), S = fi.S * (.55 + .45 * fi.stam), tired = fi.stam <= 0;
+  const s0 = fiSave(), rod = FI_RODS[s0.rod], G = fiGear(), W = FI_WFX[s0.weather] || FI_WFX.clair, lv = fiLevel(), S = fi.S * (.55 + .45 * fi.stam), tired = fi.stam <= 0;
   if (--fi.rushT <= 0) {
     fi.rush = tired ? false : !fi.rush; fi.rushT = fi.rush ? (25 + Math.random() * 60) * (.6 + S) : (50 + Math.random() * 120) / (fi.erratic * (.6 + S));
-    if (fi.rush) { fi.dir = Math.random() < .5 ? -1 : 1; fi.dirT = fi.rushT; if (fi.jumpy && Math.random() < .4) { fi.jump = 48; fi.jumpHeld = false; } }
+    if (fi.rush) { fi.dir = Math.random() < .5 ? -1 : 1; fi.dirT = fi.rushT; if (fi.jumpy && Math.random() < (fi.jumpP || .4)) { fi.jump = 48; fi.jumpHeld = false; } }
   }
-  if (--fi.dirT <= 0) { fi.dir = tired ? 0 : [-1, 0, 1][Math.floor(Math.random() * 3)]; fi.dirT = 50 + Math.random() * 100; }
+  if (--fi.dirT <= 0) { fi.dir = tired ? 0 : [-1, 0, 1][Math.floor(Math.random() * 3)]; fi.dirT = (50 + Math.random() * 100) / (fi.lphase === 3 ? 2.6 : 1); }
   const good = fi.dir && fi.steer === -fi.dir, bad = fi.dir && fi.steer === fi.dir;
-  let dT = hold ? (.0045 + S * .0105 * (fi.rush ? 1.9 : .55)) / rod.str : -.013, dD = hold ? -.0038 * rod.reel * (1 + lv.reel) * (fi.rush ? .15 : 1) / (.7 + S * .6) : fi.rush ? S * .006 : .0005;
+  let dT = hold ? (.0045 + S * .0105 * (fi.rush ? 1.9 : .55)) / (rod.str * G.str) * W.T : -.013, dD = hold ? -.0038 * rod.reel * G.reel * (1 + lv.reel) * (fi.rush ? .15 : 1) / (.7 + S * .6) : fi.rush ? S * .006 * (fi.pull || 1) : .0005;
   if (good) { if (hold) { dT *= .6; dD *= 1.5; } else dD *= .6; fi.stam -= .0009; }
   if (bad && hold) dT *= 1.5;
   if (tired) { if (hold) { dD *= 1.8; dT *= .6; } else dD *= .4; }
@@ -557,11 +690,12 @@ const FI_SPECIAL = {
 function fiLandSpecial(kind) {
   const s = fiSave(), lv = fiLevel().lv, coins = kind === 'chest' ? 150 + Math.round(Math.random() * 120) * lv : 5, xp = kind === 'chest' ? 40 : 5;
   let extra = '';
-  if (kind === 'chest') { const k = ['v', 'a', 'c', 'l', 'k', 'g'][Math.floor(Math.random() * 6)]; s.baits[k] = (s.baits[k] || 0) + 5; extra = '+ 5 ' + FI_BAITS[k].name.toLowerCase(); s.chests = (s.chests || 0) + 1; fiQuestEvent('chest'); }
+  if (kind === 'chest') { const k = ['v', 'a', 'c', 'l', 'k', 'g'][Math.floor(Math.random() * 6)]; s.baits[k] = (s.baits[k] || 0) + 5; extra = '+ 5 ' + FI_BAITS[k].name.toLowerCase(); s.chests = (s.chests || 0) + 1; fiQuestEvent('chest'); const ms = Object.keys(FI_MATS).slice(0, 6); for (let i = 0; i < 3; i++) fiFind(ms[Math.floor(Math.random() * 6)]); extra += ' + 3 trouvailles'; } else extra = fiFind(FI_FINDS[s.spot][0], 2);
   s.money += coins; s.earned += coins; s.xp = (s.xp || 0) + xp;
   fi.card = {special: kind, val: coins, extra, t: 0, xp};
   saveGames(); sfx(kind === 'chest' ? 'launch' : 'notify'); fiUi();
 }
+function fiFind(m, n = 1) { const s = fiSave(); s.mats[m] = (s.mats[m] || 0) + n; return '+' + n + ' ' + FI_MATS[m].toLowerCase(); }
 function fiLand() {
   if (fi.special) return fiLandSpecial(fi.special);
   const s = fiSave(), f = fi.fish, cm = fi.cm, d = s.dex[f.id], isNew = !d, lv0 = fiLevel().lv;
@@ -573,7 +707,19 @@ function fiLand() {
   s.dex[f.id] = {n: (d?.n || 0) + 1, best: Math.max(d?.best || 0, cm), t: d?.t || Date.now()};
   s.money += val; s.total++; s.earned += val;
   if (!s.best || f.rarity > s.best.rarity || (f.rarity === s.best.rarity && cm > s.best.cm)) s.best = {id: f.id, cm, rarity: f.rarity};
-  fi.card = {f, cm, val, isNew, rec: !isNew && cm > d.best, t: 0, xp, mult, up: fiLevel().lv > lv0};
+  const finds = [], h = fiHour(), lk = fi.legend;
+  if (Math.random() < .5) finds.push(fiFind('ecaille', f.rarity >= 3 ? 2 : 1));
+  if (Math.random() < .3) { const opts = fiPhase(h) === 'N' && 'ERL'.includes(s.spot) ? ['luciole'] : FI_FINDS[s.spot]; finds.push(fiFind(opts[Math.floor(Math.random() * opts.length)])); }
+  for (const [k, L] of Object.entries(FI_LEGENDS)) {  // the village stories move on
+    const st = fiLegendState(k); if (!fiLegendOpen(k) || s.spot !== L.spot) continue;
+    if (st.step === 0 && (L.catch.names ? L.catch.names.includes(f.name) : f.rarity >= L.catch.rarity) && ++st.got >= L.catch.n) { st.step = 1; st.got = 0; fiStoryMsg = L.npc + ' a du nouveau pour toi (village)'; }
+    else if (st.step >= 1 && st.step < 4 && !s.mats[L.item] && !(s.baits[L.bait] > 0) && fiTimeOk({time: L.time}, h) && (L.weather !== 'N' || s.weather === 'neige') && Math.random() < .25) { finds.push(fiFind(L.item)); if (st.step === 1) { st.step = 2; fiStoryMsg = 'Trouvé : ' + FI_MATS[L.item].toLowerCase() + ' ! Montre-la à ' + L.npc + ' (village)'; } }
+  }
+  if (lk) { const st = fiLegendState(lk); st.step = 4; st.at = Date.now(); s.money += FI_LEGENDS[lk].reward; s.earned += FI_LEGENDS[lk].reward; fiStoryMsg = FI_LEGENDS[lk].npc + ' : « ' + FI_LEGENDS[lk].lines[4] + ' »'; }
+  const t = fiTourn();
+  if (s.spot === t.spot) { if (t.kind === 'big') t.score = Math.max(t.score, cm); else if (t.kind === 'count') t.score++; else if (t.kind === 'value') t.score += val; else if (!t.seen.includes(f.id)) { t.seen.push(f.id); t.score = t.seen.length; } }
+  fi.legend = null;
+  fi.card = {f, cm, val, isNew, rec: !isNew && cm > d.best, t: 0, xp, mult, up: fiLevel().lv > lv0, finds: finds.join(' · '), legend: lk ? FI_LEGENDS[lk].reward : 0};
   saveGames(); sfx(isNew ? 'launch' : 'notify'); fiUi();
 }
 function fiUpdate() {
@@ -592,11 +738,14 @@ function fiUpdate() {
   if (fi.phase === 'cast') {
     fi.castT += 1 / 40; const k = Math.min(1, fi.castT), x0 = 100, x1 = fi.target;
     fi.bob = {x: x0 + (x1 - x0) * k, y: 70 + (FI.WY - 70) * k - Math.sin(k * Math.PI) * 50};
-    if (k >= 1) { fiPlouf(false); fi.phase = 'wait'; fi.bob = {x: x1, y: FI.WY}; fi.biteIn = (180 + Math.random() * 540) * FI_BAITS[s.bait].wait; fi.nibble = 0; for (let i = 0; i < 6; i++) fi.rain.push({x: x1 + (Math.random() - .5) * 8, y: FI.WY - 1, vy: -1 - Math.random() * 1.5, splash: true}); sfx('click'); }
+    if (k >= 1) { fiPlouf(false); fi.phase = 'wait'; fi.bob = {x: x1, y: FI.WY}; fi.biteIn = (180 + Math.random() * 540) * FI_BAITS[s.bait].wait * (FI_WFX[s.weather] || FI_WFX.clair).wait; fi.nibble = 0; for (let i = 0; i < 6; i++) fi.rain.push({x: x1 + (Math.random() - .5) * 8, y: FI.WY - 1, vy: -1 - Math.random() * 1.5, splash: true}); sfx('click'); }
   }
   if (fi.phase === 'wait') {
-    if (--fi.biteIn <= 0) { fi.fish = fiPick(fi.castPower); const f = fi.fish; fi.cm = Math.round((f.min + (f.max - f.min) * Math.random() ** 1.6) * 10) / 10; fi.phase = 'bite'; fi.biteT = fi.biteMax = Math.round(60 - fi.fish.rarity * 5); const sp = Math.random(); fi.special = sp < .03 ? 'chest' : sp < .07 ? 'junk' : null; sfx('notify'); }
-    else if (Math.random() < .006) fi.nibble = 12;  // a false alarm
+    if (--fi.biteIn <= 0) {
+      const lb = FI_BAITS[s.bait].legend; fi.legend = lb && fi.castPower >= .45 ? lb : null;  // a legend only bites far out
+      fi.fish = fi.legend ? fiLegendFish(fi.legend) : fiPick(fi.castPower); const f = fi.fish; fi.cm = Math.round((f.min + (f.max - f.min) * Math.random() ** (FI_BAITS[s.bait].big ? .8 : 1.6)) * 10) / 10; fi.phase = 'bite'; fi.biteT = fi.biteMax = Math.round(60 - fi.fish.rarity * 5 + fiGear().win + (fi.legend ? 10 : 0)); const sp = Math.random(); fi.special = fi.legend ? null : sp < .03 ? 'chest' : sp < .07 ? 'junk' : null; sfx('notify');
+    }
+    else if (Math.random() < ((FI_WFX[s.weather] || {}).calm ? .002 : .006)) fi.nibble = 12;  // a false alarm
     if (fi.nibble) fi.nibble--;
   }
   if (fi.phase === 'bite' && --fi.biteT <= 0) { fi.phase = 'idle'; fi.bob = null; s.streak = 0; fiSay('Trop tard… il s\'est échappé', '#ff4f6d'); sfx('error'); }
@@ -604,14 +753,26 @@ function fiUpdate() {
     if (fi.holding && fi.tick % (fi.stam <= 0 ? 3 : 5) === 0) fiTone(1500 + Math.random() * 400, .02, 'square', .009);  // le moulinet
     const r = fiFightStep(fi.holding);
     fi.bob = {x: Math.max(110, Math.min(FI.W - 8, 100 + fi.D * (fi.target - 100) + fi.fx)), y: FI.WY + Math.sin(fi.tick / 3) * (fi.rush ? 2 : .6)};
-    if (r === 'win') { fi.phase = 'landed'; fi.bob = null; fiLand(); }
+    if (r === 'win' && fi.legend && fi.lphase < 3) {  // a legend does not give up: next phase
+      fi.lphase++; fi.D = .8; fi.stam = 1; fi.T = Math.min(fi.T, .45); fi.rushT = 30; fiPlouf(true);
+      if (fi.lphase === 2) { Object.assign(fi, {jumpy: true, jumpP: .85, pull: 1.2, S: 1.2}); fiSay('PHASE 2 : elle saute ! Relâche à chaque saut', '#ff5ad9', 220); }
+      else { Object.assign(fi, {jumpy: false, erratic: 2.4, S: 1.3, pull: 1.4}); fiSay('PHASE 3 : dernier sursaut, contre chacun de ses départs !', '#ff5ad9', 220); }
+    } else if (r === 'win') { fi.phase = 'landed'; fi.bob = null; fiLand(); }
+    if ((r === 'break' || r === 'escape') && fi.legend) { const L = FI_LEGENDS[fi.legend]; fi.legend = null; fi.phase = 'idle'; fi.bob = null; s.streak = 0; fiSay(L.npc + ' : « Elle t\'a échappé… elle reviendra. Garde ton calme quand la tension monte. »', '#ff4f6d', 260); sfx('error'); return; }
     if (r === 'break' || r === 'escape') s.streak = 0;
     if (r === 'break') { fi.phase = 'idle'; fi.bob = null; fiSay('Le fil a cassé ! Relâche quand la tension monte', '#ff4f6d', 200); sfx('error'); }
     if (r === 'escape') { fi.phase = 'idle'; fi.bob = null; fiSay('Le poisson s\'est décroché…', '#ff4f6d', 160); sfx('error'); }
   }
   if (fi.card) fi.card.t++;
   if (fi.questMsg && --fi.questMsg.t <= 0) fi.questMsg = null;
+  if (fiStoryMsg && !fi.questMsg) { fi.questMsg = {text: fiStoryMsg, t: 300}; fiStoryMsg = ''; fiUi(); }
+  if (fiTournNews && !fi.questMsg) { fi.questMsg = {text: fiTournNews, t: 360}; fiTournNews = ''; fiUi(); }
+  const sea = fiSeason();  // falling leaves in autumn, petals in spring, by the trees
+  if ('ERL'.includes(s.spot) && 'PA'.includes(sea) && Math.random() < .05) fi.leaves.push({x: 90 + Math.random() * (FI.W - 90), y: -2, c: sea === 'A' ? ['#e07a2a', '#d0a030', '#b04a20'][Math.floor(Math.random() * 3)] : ['#ffc0d8', '#ffffff'][Math.floor(Math.random() * 2)], ph: Math.random() * 6});
+  for (const l of fi.leaves) { l.y += l.y < FI.WY ? .35 : 0; l.x += Math.sin(fi.tick / 30 + l.ph) * .4 - (l.y >= FI.WY ? .1 : 0); l.life = (l.life || 0) + (l.y >= FI.WY ? 1 : 0); }
+  fi.leaves = fi.leaves.filter(l => l.life < 400 && l.x > -4);
 }
+let fiStoryMsg = '';
 function fiFisher(g, x, y, pose) {  // 12 x 18, standing on the shore
   const P = {o: '#130a20', h: '#ffd07a', H: '#b8641c', s: '#f0c8a0', j: '#ff5ad9', J: '#8a1a7a', p: '#2b2468', b: '#3a2a1c'};
   const rows = ['...hhhhh....', '..HHHHHHH...', '...ossso....', '...sssss....', '....sss.....', '...jjjjj....', '..jjJjjjj...', '..jJjjjjj' + (pose ? 's' : '.') + '..', '..jjjjjjj...', '...jjjjj....', '...ppppp....', '...pp.pp....', '...pp.pp....', '...pp.pp....', '...bb.bb....'];
@@ -627,6 +788,10 @@ function fiUnder(g, spot, key) {  // sous l'eau : rayons de lumière, fond sable
   for (let i = 0; i < 12; i++) { const bx = 100 + ((i * 53) % (W - 110)), len = 10 + (i * 7) % 16; for (let j = 0; j < len; j += 2) px(g, mixc(kelp, w3, j / len * .6), bx + Math.sin(t / 30 + i + j / 5) * (1 + j / 8), H - 14 - j, 2, 2); }
   if (key === 'T') for (const x of [150, 230, 300]) { px(g, '#ff6a8a', x, H - 20, 8, 6); px(g, '#ffb06a', x + 2, H - 24, 4, 4); }
   for (let i = 0; i < 10; i++) { const y = H - ((t * (.12 + i % 4 * .04) + i * 31) % (H - WY)), x = 110 + (i * 71) % (W - 120) + Math.sin(t / 20 + i) * 2; px(g, 'rgba(255,255,255,.4)', x, y, 1 + i % 2, 1 + i % 2); }
+}
+function fiMoonDisc(g, x, y, r, p) {  // the lit part is the disc minus a shadow disc that slides across with the phase
+  const k = p * 2, dx = k < 1 ? -k * 2 * r : (2 - k) * 2 * r; x = Math.round(x); y = Math.round(y);
+  for (let dy = -r; dy <= r; dy++) for (let i = -r; i <= r; i++) if (i * i + dy * dy <= r * r) px(g, (i - dx) ** 2 + dy * dy > r * r ? ((i + 2) % 4 === 0 && (dy + 3) % 4 === 0 ? '#c9bdf0' : '#e6dcff') : 'rgba(120,110,170,.3)', x + i, y + dy, 1, 1);
 }
 function fiDraw() {
   const g = fi.g, {W, H, WY} = FI, s = fiSave(), h = fiHour(), spot = FI_SPOTS[s.spot], night = Math.max(fiNight(h), spot.dark ? .45 : 0), [top, bot] = fiSkyAt(h);
@@ -646,11 +811,11 @@ function fiDraw() {
     g.save(); g.translate(Math.round(fi.bob.x), Math.round(jy)); g.rotate((k - .5) * (fi.dir || 1) * 1.2); g.imageSmoothingEnabled = false; g.drawImage(art, -art.width * sc / 2, -art.height * sc / 2, art.width * sc, art.height * sc); g.restore();
     if (fi.jump > 44 || fi.jump < 4) for (let i = 0; i < 6; i++) px(g, '#ffffff', fi.bob.x - 10 + Math.random() * 20, WY - Math.random() * 6, 1, 2);
   }
-  if (fi.phase === 'fight' && fi.bob) { g.fillStyle = 'rgba(5,1,20,.45)'; g.fillRect(Math.round(fi.bob.x - 10), WY + 6, 20, 4); if (fi.rush && fi.tick % 6 < 3) for (let i = 0; i < 4; i++) px(g, '#ffffff', fi.bob.x - 8 + Math.random() * 16, WY - 2 - Math.random() * 4, 1, 1); }
+  if (fi.phase === 'fight' && fi.bob) { g.fillStyle = 'rgba(5,1,20,.45)'; g.fillRect(Math.round(fi.bob.x - (fi.legend ? 34 : 10)), WY + 6, fi.legend ? 68 : 20, fi.legend ? 8 : 4); if (fi.rush && fi.tick % 6 < 3) for (let i = 0; i < 4; i++) px(g, '#ffffff', fi.bob.x - 8 + Math.random() * 16, WY - 2 - Math.random() * 4, 1, 1); }
   if (fi.phase === 'wait' && fi.biteIn < 120 && fi.bob) { g.fillStyle = 'rgba(5,1,20,.3)'; g.fillRect(Math.round(fi.bob.x - 30 + (120 - fi.biteIn) / 4.6), WY + 10, 12, 3); }
   // the shore and the angler
   const sh = spot.shore, SX = FI.SHORE;
-  if (sh === 'wood') { px(g, '#3a2a1c', 0, WY - 6, SX, 6); px(g, '#8a5a2a', 0, WY - 8, SX, 3); for (let x = 2; x < SX; x += 8) px(g, '#6a4220', x, WY - 8, 1, 3); for (const x of [10, 44, 78]) px(g, '#2a1c10', x, WY - 3, 4, 20); }
+  if (sh === 'wood') { px(g, '#3a2a1c', 0, WY - 6, SX, 6); px(g, fiSeason() === 'H' ? '#e6ecff' : '#8a5a2a', 0, WY - 8, SX, 3); for (let x = 2; x < SX; x += 8) px(g, '#6a4220', x, WY - 8, 1, 3); for (const x of [10, 44, 78]) px(g, '#2a1c10', x, WY - 3, 4, 20); }
   if (sh === 'rock') { for (let i = 0; i < 9; i++) { const x = i * 11, hh = 10 + (i * 7) % 9; px(g, '#4a3c4a', x, WY - hh, 14, hh + 10); px(g, '#6a5a6a', x + 2, WY - hh, 8, 2); } }
   if (sh === 'ice') { px(g, '#d6e6ff', 0, WY - 10, SX + 6, 14); px(g, '#ffffff', 0, WY - 10, SX + 6, 2); px(g, '#a6c0e8', 0, WY + 2, SX + 6, 3); }
   if (sh === 'boat') { px(g, '#3a2a1c', 4, WY - 8, SX, 10); px(g, '#8a5a2a', 0, WY - 10, SX + 8, 3); px(g, '#6a4220', 14, WY - 2, SX - 20, 3); px(g, '#2a1c10', 10, WY - 30, 2, 22); px(g, (fi.tick >> 4) % 2 ? '#ffd07a' : '#ffbf5a', 8, WY - 34, 6, 5); g.fillStyle = 'rgba(255,208,122,.12)'; g.beginPath(); g.arc(11, WY - 31, 22, 0, Math.PI * 2); g.fill(); }
@@ -666,11 +831,12 @@ function fiDraw() {
     if (fi.phase !== 'fight') { px(g, '#ffffff', b.x - 1, by - 4, 3, 3); px(g, '#ff4f6d', b.x - 1, by - 2, 3, 3); }
     if (fi.phase === 'wait' && fi.tick % 90 < 30) { g.strokeStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.ellipse(b.x, WY + 1, 4 + (fi.tick % 90) / 3, 1.5, 0, 0, Math.PI * 2); g.stroke(); }
   }
+  for (const l of fi.leaves || []) px(g, l.c, l.x, l.y, 2, l.y >= FI.WY ? 1 : 2);
   for (const p of fi.rain) { if (p.splash) { px(g, '#ffffff', p.x, p.y, 1, 1); continue; } if (p.snow) px(g, '#ffffff', p.x, p.y, 2, 2); else px(g, 'rgba(200,210,255,.6)', p.x, p.y, 1, 4); }
   if (night) { g.fillStyle = `rgba(8,4,32,${night})`; g.fillRect(0, 0, W, H); }
   const hz = fi.decor.horizon;
   if (night > .2) for (const [x, y, z] of fi.stars) if (y < hz[Math.floor(x)] - 1 && (fi.tick / 20 + z * 50) % 9 > .6) px(g, z > .7 ? '#ffffff' : '#9d8bd0', x, y, 1, 1);
-  if (!(h >= 5.5 && h <= 18.5)) { const x = 30 + (W - 60) * ((h - 18 + 24) % 24) / 12, y = 90 - Math.sin(moonA) * 70; if (y + 5 < hz[Math.max(0, Math.min(W - 1, Math.round(x)))]) { fiDisc(g, x, y, 8, 'rgba(230,220,255,.12)'); fiDisc(g, x, y, 5, '#e6dcff'); px(g, '#c9bdf0', x - 2, y - 3, 2, 2); px(g, '#c9bdf0', x + 1, y + 1, 2, 2); } }
+  if (!(h >= 5.5 && h <= 18.5)) { const x = 30 + (W - 60) * ((h - 18 + 24) % 24) / 12, y = 90 - Math.sin(moonA) * 70; if (y + 5 < hz[Math.max(0, Math.min(W - 1, Math.round(x)))]) { const p = fiMoon(); if (Math.abs(p - .5) < .3) fiDisc(g, x, y, 8, 'rgba(230,220,255,.12)'); fiMoonDisc(g, x, y, 5, p); } }
   const cloudy = {clair: 2, nuageux: 6, pluie: 6, orage: 6, brouillard: 4, neige: 6}[s.weather], grey = mixc(s.weather === 'orage' || s.weather === 'pluie' ? '#6a6a8a' : '#e6e6f6', '#0b0820', night * .85);  // clouds pass in front of the stars and the moon
   fi.clouds.slice(0, cloudy).forEach(cl => { cl[0] = (cl[0] + .04) % (W + 60); const x = cl[0] - 30, y = cl[1], w = cl[2]; px(g, mixc(grey, top, .3), x, y + 3, w, 5); px(g, grey, x + 4, y, w - 10, 5); px(g, grey, x + w * .3, y - 3, w * .4, 4); });
   if (s.weather === 'brouillard') { g.fillStyle = 'rgba(200,200,230,.22)'; g.fillRect(0, 50, W, 90); g.fillStyle = 'rgba(200,200,230,.12)'; g.fillRect(0, 30, W, 130); }
@@ -680,7 +846,9 @@ function fiDraw() {
   // interface drawn over the scene
   px(g, 'rgba(11,3,28,.75)', 0, 0, W, 13);
   pxFont(g, String(Math.floor(h)).padStart(2, '0') + ':' + String(Math.floor((s.clock % 60))).padStart(2, '0') + ' · ' + fiPhaseName(h) + ' · ' + FI_WNAMES[s.weather], 4, 9, '#d9c6ff', 6);
-  const lvl = fiLevel(); pxFont(g, s.money + ' pièces', W - 4, 9, '#ffd07a', 6, 'right'); pxFont(g, 'NIV ' + lvl.lv, W - 92, 9, '#8ee8a0', 6, 'right'); px(g, '#1c1238', W - 88, 5, 24, 3); px(g, '#8ee8a0', W - 88, 5, 24 * lvl.k, 3);
+  const lvl = fiLevel(), mx = W - 10 - (s.money + ' pièces').length * 6; pxFont(g, s.money + ' pièces', W - 4, 9, '#ffd07a', 6, 'right'); pxFont(g, 'NIV ' + lvl.lv, mx - 30, 9, '#8ee8a0', 6, 'right'); px(g, '#1c1238', mx - 26, 5, 24, 3); px(g, '#8ee8a0', mx - 26, 5, 24 * lvl.k, 3);
+  pxFont(g, FI_SEASONS[fiSeason()].toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + ' · ' + fiMoonName().toUpperCase(), W - 14, 21, '#c9bdf0', 5, 'right'); fiMoonDisc(g, W - 7, 19, 3, fiMoon());
+  { const t = s.tourn; if (t && t.spot === s.spot && t.week === fiWeekKey()) pxFont(g, 'TOURNOI : ' + fiRankTxt(fiTournRank(t, fiRivalNow(t))).toUpperCase() + ' PLACE', W - 4, 30, '#ffd07a', 5, 'right'); }
   if ((s.streak || 0) >= 2 && fi.phase !== 'fight') pxFont(g, 'SÉRIE ×' + s.streak + ' (+' + Math.min(50, (s.streak - 1) * 10) + ' %)', 4, 21, '#ffd07a', 6);
   if (fi.phase === 'idle' && !fi.card && !fi.msg) pxFont(g, 'Maintiens clic ou espace pour lancer', W / 2, H - 8, '#ffffff', 6, 'center');
   if (fi.phase === 'charge') { px(g, '#05010b', W / 2 - 61, H - 16, 122, 9); px(g, '#2a1d52', W / 2 - 60, H - 15, 120, 7); px(g, fi.power > .8 ? '#ff5ad9' : '#7fe0ee', W / 2 - 60, H - 15, 120 * fi.power, 7); pxFont(g, 'Relâche pour lancer · plus loin = plus gros', W / 2, H - 20, '#ffffff', 6, 'center'); }
@@ -700,9 +868,10 @@ function fiDraw() {
     }
     const tip = fi.jump > 0 ? ['IL SAUTE ! RELÂCHE !', '#ff4f6d'] : fi.rush ? ['IL TIRE ! RELÂCHE' + (fi.dir ? ' OU CONTRE ' + (fi.dir > 0 ? '<' : '>') : ''), '#ff4f6d'] : fi.stam <= 0 ? ['IL EST ÉPUISÉ : REMONTE !', '#8ee8a0'] : fi.dir ? ['Il part ' + (fi.dir > 0 ? 'à droite : contre avec <' : 'à gauche : contre avec >'), '#ffd07a'] : [fi.holding ? 'Remonte…' : 'Maintiens pour remonter', '#ffffff'];
     pxFont(g, tip[0], W / 2, gy - 5, tip[1], 7, 'center');
+    if (fi.legend) { pxFont(g, 'LÉGENDE · PHASE ' + fi.lphase + '/3', W / 2, 58, '#ff5ad9', 8, 'center'); for (let i = 0; i < 3; i++) px(g, i < fi.lphase ? '#ff5ad9' : '#2a1d52', W / 2 - 16 + i * 12, 62, 8, 3); }
   }
-  if (fi.msg) pxFont(g, fi.msg.text, W / 2, H - 8, fi.msg.color, 6, 'center');
-  if (fi.questMsg) { px(g, 'rgba(11,3,28,.85)', 0, 14, W, 12); pxFont(g, fi.questMsg.text, W / 2, 23, '#8ee8a0', 6, 'center'); }
+  if (fi.msg) { const ls = fiWrap(fi.msg.text); ls.forEach((l, i) => pxFont(g, l, W / 2, H - 8 - (ls.length - 1 - i) * 9, fi.msg.color, 6, 'center')); }
+  if (fi.questMsg) { const ls = fiWrap(fi.questMsg.text); px(g, 'rgba(11,3,28,.85)', 0, 14, W, 3 + ls.length * 9); ls.forEach((l, i) => pxFont(g, l, W / 2, 23 + i * 9, '#8ee8a0', 6, 'center')); }
   if (fi.card?.special) {  // a chest or junk
     const c = fi.card, sp = FI_SPECIAL[c.special], bw = 200, bx = (W - bw) / 2, by = 46, bh = 104;
     px(g, '#05010b', bx - 2, by - 2, bw + 4, bh + 4); px(g, '#120922', bx, by, bw, bh); px(g, sp.color, bx, by, bw, 2);
@@ -717,10 +886,11 @@ function fiDraw() {
     g.imageSmoothingEnabled = false; const ax = Math.round(W / 2 - art.width * sc / 2), ay = Math.round(by + 48 - art.height * sc / 2 + Math.sin(c.t / 12) * 2);
     if (f.pattern === 'n') { g.fillStyle = f.fin + '33'; g.fillRect(ax - 6, ay - 6, art.width * sc + 12, art.height * sc + 12); }
     g.drawImage(art, ax, ay, art.width * sc, art.height * sc);
-    pxFont(g, c.isNew ? 'NOUVELLE ESPÈCE !' : c.rec ? 'NOUVEAU RECORD DE TAILLE !' : 'Belle prise !', W / 2, by + 14, c.isNew ? '#ffd07a' : '#d9c6ff', 7, 'center');
+    pxFont(g, c.legend ? 'LÉGENDE VAINCUE ! +' + c.legend + ' pièces' : c.isNew ? 'NOUVELLE ESPÈCE !' : c.rec ? 'NOUVEAU RECORD DE TAILLE !' : 'Belle prise !', W / 2, by + 14, c.isNew ? '#ffd07a' : '#d9c6ff', 7, 'center');
     pxFont(g, f.name, W / 2, by + 90, '#ffffff', 8, 'center');
     pxFont(g, rl + ' · ' + (c.cm >= 100 ? (c.cm / 100).toFixed(2) + ' m' : c.cm + ' cm'), W / 2, by + 104, rc, 6, 'center');
     pxFont(g, '+' + c.val + ' pièces' + (c.mult > 1 ? ' (série +' + Math.round((c.mult - 1) * 100) + ' %)' : '') + ' · +' + c.xp + ' XP' + (c.up ? ' · NIVEAU ' + fiLevel().lv + ' !' : ''), W / 2, by + 118, '#ffd07a', 6, 'center');
+    if (c.finds) pxFont(g, 'Trouvé : ' + c.finds, W / 2, by + bh + 12, '#8ee8a0', 6, 'center');
   }
   if (fi.mode === 'pause') gameText(g, W, [['PAUSE', '#ffffff', 12], ['Clic : reprendre', '#d9c6ff']], H / 2);
 }
@@ -733,10 +903,12 @@ function fiUi() {
   $('fiSpot').replaceChildren(...s.spots.map(k => { const o = el('option', '', FI_SPOTS[k].name); o.value = k; return o; })); $('fiSpot').value = s.spot;
   $('fiBait').replaceChildren(...Object.entries(FI_BAITS).filter(([k]) => k === 'p' || s.baits[k] > 0).map(([k, b]) => { const o = el('option', '', b.name + (k === 'p' ? '' : ' (' + s.baits[k] + ')')); o.value = k; return o; }));
   $('fiBait').value = s.bait in s.baits || s.bait === 'p' ? s.bait : 'p';
-  $('fiInfo').textContent = 'Niveau ' + fiLevel().lv + ' · ' + s.money + ' pièces · ' + FI_RODS[s.rod].name + ' · collection ' + caught + ' / ' + FISH.length + ' · ' + s.total + ' prises';
+  $('fiInfo').textContent = 'Niveau ' + fiLevel().lv + ' · ' + s.money + ' pièces · ' + FI_RODS[s.rod].name + ' · ' + fiGear().name + ' · collection ' + caught + ' / ' + FISH.length + ' · ' + s.total + ' prises';
   $('fiDexBtn').textContent = 'COLLECTION ' + caught + '/' + FISH.length;
-  $('fiShopBtn').classList.toggle('main', fiPanel === 'shop'); $('fiDexBtn').classList.toggle('main', fiPanel === 'dex');
-  $('fiShop').style.display = fiPanel === 'shop' ? '' : 'none'; $('fiDex').style.display = fiPanel === 'dex' ? '' : 'none'; $('fiQuest').style.display = fiPanel === 'quest' ? '' : 'none';
+  for (const [p, id] of FI_PANELS) { $(id + 'Btn').classList.toggle('main', fiPanel === p); $(id).style.display = fiPanel === p ? '' : 'none'; }
+  const t = fiTourn(), ready = Object.keys(FI_LEGENDS).filter(k => fiLegendOpen(k) && fiLegendState(k).step < 4).length;
+  $('fiVillageBtn').textContent = 'VILLAGE' + (ready ? ' · ' + ready : ''); $('fiTournBtn').textContent = 'TOURNOI · ' + (t.score > 0 ? fiRankTxt(fiTournRank(t, fiRivalNow(t))).toUpperCase() : FI_SPOTS[t.spot].name.toUpperCase());
+  if (fiPanel === 'craft') fiCraft(); if (fiPanel === 'village') fiVillage(); if (fiPanel === 'tourn') fiTournPanel();
   const qs = fiQuests().list; $('fiQuestBtn').textContent = 'DÉFIS ' + qs.filter(q => q.done).length + '/' + qs.length; $('fiQuestBtn').classList.toggle('main', fiPanel === 'quest');
   if (fiPanel === 'quest') fiQuestPanel();
   if (fiPanel === 'shop') fiShop(); if (fiPanel === 'dex') fiDex();
@@ -745,10 +917,74 @@ function fiBuy(price, then) { const s = fiSave(); if (s.money < price) return to
 function fiShop() {
   const s = fiSave(), card = (title, sub, label, price, on, disabled) => { const c = el('div', 'sysCard px fiItem'), b = el('button', 'btn px' + (disabled ? '' : ' main'), label); b.disabled = !!disabled || s.money < price; b.onclick = on; c.append(el('b', '', title), el('span', 'hint', sub), b); return c; };
   const rods = FI_RODS.map((r, i) => card(r.name, 'Solidité ×' + r.str + ' · moulinet ×' + r.reel + (r.luck ? ' · chance +' + Math.round(r.luck * 100) + ' %' : '') + (i >= 3 ? ' · attire les légendaires' : ''), i <= s.rod ? (i === s.rod ? 'Équipée' : 'Possédée') : 'Acheter · ' + r.price, r.price, () => fiBuy(r.price, s => s.rod = i), i <= s.rod || i > s.rod + 1));
-  const baits = Object.entries(FI_BAITS).filter(([k]) => k !== 'p').map(([k, b]) => card(b.name, b.pack + ' lancers · mord ' + Math.round((1 - b.wait) * 100) + ' % plus vite · aimé par ' + FISH.filter(f => f.likes.includes(k)).length + ' espèces' + (s.baits[k] ? ' · tu en as ' + s.baits[k] : ''), 'Acheter · ' + b.price, b.price, () => fiBuy(b.price, s => { s.baits[k] = (s.baits[k] || 0) + b.pack; s.bait = k; })));
+  const gears = Object.entries(FI_GEAR).map(([k, g]) => card(g.name, g.about, s.gear === k ? 'Équipé' : s.gears.includes(k) ? 'Équiper' : 'Acheter · ' + g.price, s.gears.includes(k) ? 0 : g.price, () => s.gears.includes(k) ? (s.gear = k, saveGames(), fiUi()) : fiBuy(g.price, s => { s.gears.push(k); s.gear = k; }), s.gear === k));
+  const baits = Object.entries(FI_BAITS).filter(([k, b]) => k !== 'p' && !b.craft).map(([k, b]) => card(b.name, b.pack + ' lancers · mord ' + Math.round((1 - b.wait) * 100) + ' % plus vite · aimé par ' + FISH.filter(f => f.likes.includes(k)).length + ' espèces' + (s.baits[k] ? ' · tu en as ' + s.baits[k] : ''), 'Acheter · ' + b.price, b.price, () => fiBuy(b.price, s => { s.baits[k] = (s.baits[k] || 0) + b.pack; s.bait = k; })));
   const spots = Object.entries(FI_SPOTS).map(([k, p]) => card(p.name, FISH.filter(f => f.spots.includes(k)).length + ' espèces · ' + FISH.filter(f => f.spots.includes(k) && s.dex[f.id]).length + ' trouvées', s.spots.includes(k) ? (s.spot === k ? 'Tu y es' : 'Y aller') : 'Débloquer · ' + p.price, s.spots.includes(k) ? 0 : p.price, () => s.spots.includes(k) ? fiGo(k) : fiBuy(p.price, s => { s.spots.push(k); fiGo(k); }), s.spot === k));
-  $('fiShop').replaceChildren(el('span', 'label', 'Cannes'), el('div', 'sysGrid', ''), el('span', 'label', 'Appâts'), el('div', 'sysGrid', ''), el('span', 'label', 'Lieux de pêche'), el('div', 'sysGrid', ''));
-  const grids = $('fiShop').querySelectorAll('.sysGrid'); grids[0].append(...rods); grids[1].append(...baits); grids[2].append(...spots);
+  $('fiShop').replaceChildren(el('span', 'label', 'Cannes'), el('div', 'sysGrid', ''), el('span', 'label', 'Montage (change les poissons qui viennent et le combat)'), el('div', 'sysGrid', ''), el('span', 'label', 'Appâts'), el('div', 'sysGrid', ''), el('span', 'label', 'Lieux de pêche'), el('div', 'sysGrid', ''));
+  const grids = $('fiShop').querySelectorAll('.sysGrid'); grids[0].append(...rods); grids[1].append(...gears); grids[2].append(...baits); grids[3].append(...spots);
+}
+const FI_PANELS = [['shop', 'fiShop'], ['dex', 'fiDex'], ['quest', 'fiQuest'], ['craft', 'fiCraft'], ['village', 'fiVillage'], ['tourn', 'fiTourn']];
+const fiWrap = (text, n = 60) => text.split(' ').reduce((ls, w) => { if (ls.length && (ls.at(-1) + ' ' + w).length <= n) ls[ls.length - 1] += ' ' + w; else ls.push(w); return ls; }, []);
+const fiRankTxt = r => r + (r === 1 ? 're' : 'e');
+function fiMake(k) {  // craft one pack of a bait from the finds
+  const s = fiSave(), b = FI_BAITS[k];
+  if (!Object.entries(b.craft).every(([m, n]) => (s.mats[m] || 0) >= n)) return false;
+  for (const [m, n] of Object.entries(b.craft)) s.mats[m] -= n;
+  s.baits[k] = (s.baits[k] || 0) + b.pack; s.bait = k;
+  if (b.legend) { const st = fiLegendState(b.legend); if (st.step === 2) { st.step = 3; fiStoryMsg = FI_LEGENDS[b.legend].npc + ' : « ' + FI_LEGENDS[b.legend].lines[3] + ' »'; } }
+  saveGames(); return true;
+}
+function fiCraft() {
+  const s = fiSave(), mats = el('div', 'row fiTabs');
+  for (const [m, name] of Object.entries(FI_MATS)) if (s.mats[m] || !['ecd', 'perle', 'dent'].includes(m)) mats.append(el('span', 'btn px', name + ' · ' + (s.mats[m] || 0)));
+  const grid = el('div', 'sysGrid');
+  for (const [k, b] of Object.entries(FI_BAITS)) {
+    if (!b.craft || (b.legend && fiLegendState(b.legend).step < 2)) continue;
+    const ok = Object.entries(b.craft).every(([m, n]) => (s.mats[m] || 0) >= n), c = el('div', 'sysCard px fiItem'), btn = el('button', 'btn px main', 'Fabriquer ' + b.pack + ' appâts');
+    btn.disabled = !ok; btn.onclick = () => { if (fiMake(k)) { sfx('notify'); toast(b.name + ' : +' + b.pack); fiUi(); } };
+    c.append(el('b', '', b.name), el('span', 'hint', b.about + ' · il faut ' + fiRecipe(b) + (s.baits[k] ? ' · tu en as ' + s.baits[k] : '')), btn); grid.append(c);
+  }
+  $('fiCraft').replaceChildren(el('span', 'label', 'Tes trouvailles'), mats,
+    el('span', 'hint', 'Chaque prise peut laisser des écailles, et chaque lieu a ses trouvailles : plumes et algues au bord de l\'eau, lucioles la nuit, coquillages en mer, cristaux sur la banquise. Les coffres et les vieilles bottes en donnent aussi.'),
+    el('span', 'label', 'Recettes'), grid);
+}
+const fiFaceCache = {};
+function fiFace(cols) {  // a small pixel portrait: hat, face, beard or hair
+  const key = cols.join(); if (fiFaceCache[key]) return fiFaceCache[key];
+  const c = document.createElement('canvas'); c.width = c.height = 12; const g = c.getContext('2d');
+  sprite(g, ['....hhhh....', '...hhhhhh...', '..hhhhhhhh..', '.hhhhhhhhhh.', '...ssssss...', '..sseesees..', '..ssssssss..', '..ssbsssbs..', '...bbbbbb...', '....bbbb....', '..cccccccc..', '.cccccccccc.'], 0, 0, {h: cols[0], s: cols[1], e: '#1c1238', b: cols[2], c: mixc(cols[0], '#000000', .3)});
+  return (fiFaceCache[key] = c.toDataURL());
+}
+const fiLegendWeatherOk = (L, w) => !L.weather || (L.weather === 'C' ? !['clair', 'neige'].includes(w) : fiWeatherOk({weather: L.weather}, w));
+function fiMoonWait() { const p = fiMoon(); return Math.abs(p - .5) < .25 ? 0 : Math.ceil(((p < .25 ? .25 : 1.25) - p) * 29.53); }
+function fiVillage() {
+  const s = fiSave(), list = el('div', 'fiPanel');
+  for (const [k, L] of Object.entries(FI_LEGENDS)) {
+    const st = fiLegendState(k), open = fiLegendOpen(k), c = el('div', 'sysCard px fiNpc'), img = el('img'), box = el('div');
+    img.src = fiFace(L.face);
+    const goal = !open ? 'Reviens quand tu seras pêcheur de niveau ' + L.lv + '.'
+      : st.step === 0 ? 'Objectif : pêcher ' + L.catch.n + ' ' + (L.catch.names ? L.catch.names.join(' ou ').toLowerCase() : 'poissons rares ou mieux') + ' au ' + FI_SPOTS[L.spot].name + ' (' + st.got + ' / ' + L.catch.n + ')' + (s.spots.includes(L.spot) ? '' : ' · ce lieu se débloque à la boutique')
+      : st.step === 1 ? 'Objectif : trouver ' + FI_MATS[L.item].toLowerCase() + ' en pêchant au ' + FI_SPOTS[L.spot].name + '.'
+      : st.step === 2 ? 'Objectif : fabriquer ' + FI_BAITS[L.bait].name.toLowerCase() + ' à l\'atelier (' + fiRecipe(FI_BAITS[L.bait]) + ').'
+      : st.step === 3 ? 'Objectif : la pêcher au ' + FI_SPOTS[L.spot].name + ', ' + L.cond + ', avec ' + FI_BAITS[L.bait].name.toLowerCase() + ' et au moins la ' + FI_RODS[L.rod].name.toLowerCase() + '. Lance loin.' + (L.moon && fiMoonWait() ? ' La lune sera assez pleine dans ' + fiMoonWait() + ' jour' + (fiMoonWait() > 1 ? 's' : '') + '.' : '') + (fiLegendCondOk(L, s) ? ' C\'est le moment !' : '')
+      : 'Légende pêchée' + (s.dex[fiLegendFish(k).id] ? ' · record ' + s.dex[fiLegendFish(k).id].best + ' cm' : '') + '.';
+    box.append(el('b', '', L.npc + ', ' + L.who), el('q', '', open ? L.lines[Math.min(4, st.step)] : 'On raconte des histoires, au village… mais pas aux débutants.'), el('span', 'hint', goal));
+    c.append(img, box); list.append(c);
+  }
+  $('fiVillage').replaceChildren(el('span', 'label', 'Les pêcheurs du village et leurs légendes'), list,
+    el('span', 'hint', 'Une légende se bat en trois phases : elle plonge vers le fond (maintiens et contre ses départs), elle saute (relâche à chaque saut), puis elle donne tout (contre chaque départ). Si elle casse le fil, l\'appât est perdu mais tu peux en refaire.'));
+}
+function fiTournPanel() {
+  const s = fiSave(), t = fiTourn(), now = fiRivalNow(t), left = fiWeekStart().getTime() + 7 * 864e5 - Date.now(), d = Math.floor(left / 864e5), h = Math.floor(left % 864e5 / 36e5);
+  const rows = [...FI_RIVALS.map(([n], i) => ({n, v: now[i]})), {n: 'Toi', v: t.score, me: true}].sort((a, b) => b.v - a.v || (a.me ? -1 : 1));
+  const board = el('div', 'fiBoard');
+  rows.forEach((r, i) => { board.append(el('span', r.me ? 'me' : '', fiRankTxt(i + 1)), el('span', r.me ? 'me' : '', r.n), el('span', r.me ? 'me' : '', fiTournScore(t, r.v))); });
+  const k = 1 + 'ERLCTBA'.indexOf(t.spot) * .3, prizes = [2000, 1000, 500].map(v => Math.round(v * k / 10) * 10);
+  $('fiTourn').replaceChildren(el('span', 'label', 'Tournoi de la semaine : ' + FI_TOURN[t.kind].toLowerCase() + ' · ' + FI_SPOTS[t.spot].name),
+    el('span', 'hint', 'Seules tes prises au ' + FI_SPOTS[t.spot].name + ' comptent. Fin dans ' + d + ' j ' + h + ' h (chaque lundi, un nouveau tournoi). Les pêcheurs du village pêchent aussi pendant la semaine.'),
+    board,
+    el('span', 'hint', 'Prix : ' + prizes.join(', ') + ' pièces pour les trois premiers, plus des trouvailles · trophées : ' + s.trophies.map((n, i) => n + ' ' + ['or', 'argent', 'bronze'][i]).join(', ')),
+    ...(s.tournHist.length ? [el('span', 'hint', 'Derniers tournois : ' + s.tournHist.slice(-4).reverse().map(x => fiRankTxt(x.rank) + ' (' + FI_TOURN[x.kind].toLowerCase() + ', ' + x.prize + ' pièces)').join(' · '))] : []));
 }
 function fiGo(k) { const s = fiSave(); s.spot = k; fiNewWeather(); saveGames(); if (fi) { fi.phase = 'idle'; fi.bob = null; fi.card = null; } fiUi(); }
 function fiQuestPanel() {
@@ -771,7 +1007,7 @@ function fiDex() {
   const f = FISH[fiDexSel], d = f && s.dex[f.id], det = el('div', 'sysCard px fiDetail');
   if (f) {
     const img = el('img'); img.src = fiArtUrl(f, !d, 4);
-    const where = f.spots.split('').map(k => FI_SPOTS[k].name).join(', ') + ' · ' + FI_TIMES[f.time] + (FI_WEATHER[f.weather] ? ' · ' + FI_WEATHER[f.weather] : '');
+    const lk = fiLegendOf(f), where = f.spots.split('').map(k => FI_SPOTS[k].name).join(', ') + ' · ' + (lk ? 'légende du village : ' + FI_LEGENDS[lk].cond : FI_TIMES[f.time] + (FI_WEATHER[f.weather] ? ' · ' + FI_WEATHER[f.weather] : '') + (fiCondText(f) ? ' · ' + fiCondText(f) : ''));
     det.append(img, el('b', '', d ? f.name : 'Espèce inconnue'), el('span', 'hint', FI_RARITY[f.rarity][0] + ' · ' + where), el('span', 'hint', d ? 'Pêché ' + d.n + ' fois · record ' + d.best + ' cm · taille ' + f.min + ' à ' + f.max + ' cm · vaut environ ' + fiValue(f, (f.min + f.max) / 2) + ' pièces' : 'Taille ' + f.min + ' à ' + f.max + ' cm · appâts préférés : ' + [...f.likes].map(k => FI_BAITS[k].name).join(', ')));
   } else det.append(el('span', 'hint', 'Clique une espèce pour voir où et quand la pêcher.'));
   const A = aqSave(), kept = [...A.tanks.flatMap(t => t.fish || []), ...A.pool].filter(k => FISH[k.id]).slice(-24);
@@ -811,6 +1047,7 @@ $('fiBait').onchange = () => { fiSave().bait = $('fiBait').value; saveGames(); }
 $('fiShopBtn').onclick = () => { fiPanel = fiPanel === 'shop' ? '' : 'shop'; fiUi(); };
 $('fiDexBtn').onclick = () => { fiPanel = fiPanel === 'dex' ? '' : 'dex'; fiUi(); };
 $('fiQuestBtn').onclick = () => { fiPanel = fiPanel === 'quest' ? '' : 'quest'; fiUi(); };
+for (const [p, id] of FI_PANELS.slice(3)) $(id + 'Btn').onclick = () => { fiPanel = fiPanel === p ? '' : p; fiUi(); };
 const fiSndLabel = () => { $('fiSndBtn').textContent = fiSave().mute ? 'SON : COUPÉ' : 'SON : OUI'; };
 $('fiSndBtn').onclick = () => { const s = fiSave(); s.mute = !s.mute; saveGames(); fiSndLabel(); if (!s.mute) fiAudio(); $('fiSndBtn').blur(); };
 $('fiFsBtn').onclick = () => { $('fiFsBtn').blur(); try { document.fullscreenElement ? document.exitFullscreen() : $('fiCanvas').parentElement.requestFullscreen?.().catch(() => {}); } catch {} };
@@ -818,7 +1055,8 @@ document.addEventListener('keydown', e => { if (!view.classList.contains('on') |
 document.addEventListener('keyup', e => { if (e.key === ' ' && fi) fiPress(false); const k = e.key.toLowerCase(); if (fi && (['arrowleft', 'q', 'a'].includes(k) && fi.steer < 0 || ['arrowright', 'd'].includes(k) && fi.steer > 0)) fi.steer = 0; });
 $('fiCanvas').onpointermove = e => { if (!fi || fi.phase !== 'fight' || !fi.holding || !e.pointerType.startsWith('mouse')) return; const r = e.currentTarget.getBoundingClientRect(), x = (e.clientX - r.left) / r.width; fi.steer = x < .38 ? -1 : x > .62 ? 1 : 0; };
 const fiOpen = () => { fiSndLabel(); fi ? (fiUi(), gameLoop(fi, 'neodex:fishing', fiUpdate, fiDraw)) : fiStart(); };
-$('fiCanvas').__fi = {st: () => fi, snd: () => ({ac: !!fiAc, amb: fiAmb ? fiAmb.g.gain.value : 0, mus: fiMusN, n: fiSndN}), keep: (id, cm) => { aqKeep(id, cm); saveGames(); }, plouf: () => fiPlouf(true)};
+$('fiCanvas').__fi = {st: () => fi, snd: () => ({ac: !!fiAc, amb: fiAmb ? fiAmb.g.gain.value : 0, mus: fiMusN, n: fiSndN}), keep: (id, cm) => { aqKeep(id, cm); saveGames(); }, plouf: () => fiPlouf(true), save: fiSave, pick: fiPick, fight: fiFightStep, land: fiLand, update: fiUpdate, ui: fiUi, tourn: fiTourn, rivals: fiRivalNow, pay: fiTournPay, craft: fiMake, weather: fiNewWeather,
+  FISH, FI_LEGENDS, FI_BAITS, FI_GEAR, season: fiSeason, moon: fiMoon, moonName: fiMoonName, cond: fiCondMul, press: fiPress, panel: p => { fiPanel = p; fiUi(); }};
 
 const aqSave = () => gstore('aquarium', {tanks: [{water: 'douce', size: 0, filter: false, feeder: false, decor: [], food: 100, dirt: 0, fish: []}], pool: [], cash: 0, last: Date.now(), gift: false, earned: 0, visitors: 0, seq: 1});
 const aqKeep = (id, cm) => { const s = aqSave(); s.pool.push({id, cm, k: s.seq++}); if (s.pool.length > 60) s.pool.shift(); };

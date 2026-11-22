@@ -1,6 +1,6 @@
 # Pêche
 
-Un jeu de pêche : lance ta ligne, attends la touche, ferre au bon moment et fatigue le poisson pour le remonter. 153 espèces réparties sur 7 lieux, chacune avec ses heures, sa météo et ses appâts préférés, une boutique de cannes et d'appâts, une collection, des défis du jour et un niveau de pêcheur.
+Un jeu de pêche : lance ta ligne, attends la touche, ferre au bon moment et fatigue le poisson pour le remonter. 156 espèces réparties sur 7 lieux, chacune avec ses heures, sa météo et ses appâts préférés, de vraies saisons et la vraie lune, trois montages, des appâts à fabriquer, trois légendes du village, un tournoi chaque semaine, une boutique de cannes et d'appâts, une collection, des défis du jour et un niveau de pêcheur.
 
 *English version: [README.en.md](README.en.md)*
 
@@ -16,7 +16,7 @@ Un jeu de pêche : lance ta ligne, attends la touche, ferre au bon moment et fat
    - les gros poissons sportifs **sautent** : relâche pendant le saut pour le fatiguer d'un coup ;
    - un poisson épuisé se laisse ramener vite. Si la ligne reste trop longtemps détendue, ou s'il s'éloigne trop, il s'échappe.
 
-On peut aussi remonter une vieille botte ou un **coffre au trésor** (des pièces et 5 appâts).
+On peut aussi remonter une vieille botte ou un **coffre au trésor** (des pièces, 5 appâts et des trouvailles).
 
 ## Les lieux
 
@@ -38,10 +38,45 @@ Chaque espèce a une rareté (commun, peu commun, rare, épique, légendaire), u
 
 Un poisson se vend selon sa rareté, sa taille par rapport à son espèce et le lieu. Une **série** de prises sans en rater augmente le gain, jusqu'à +50 %.
 
+## Météo, saisons et lune
+
+- **La météo** change la pêche : la pluie fait mordre plus vite, l'orage fait sortir les poissons rares mais tire plus fort sur la ligne, le brouillard donne de faux frémissements et le beau temps rend les poissons méfiants.
+- **Les saisons** suivent le vrai calendrier : en hiver il neige presque partout, à l'automne les feuilles tombent sur l'eau, au printemps les pétales. Certaines espèces viennent surtout à une saison (leur fiche le dit).
+- **La lune** suit la vraie lune : sa forme est dessinée dans le ciel la nuit. Certaines espèces viennent surtout par pleine lune, d'autres par nouvelle lune.
+
+## Les montages
+
+Dans la boutique, trois montages changent la façon de pêcher :
+
+| Montage | Prix | Effet |
+|---|---|---|
+| Polyvalent | de départ | équilibré |
+| Canne légère | 700 pièces | petits poissons ×2, remontée rapide, plus de temps pour ferrer ; un gros poisson casse vite le fil |
+| Moulinet lourd | 3 000 pièces | monstres de plus d'un mètre ×2,5, fil très solide, remontée lente ; les petits se décrochent souvent |
+
+## L'atelier
+
+Chaque prise peut laisser des **écailles**, et chaque lieu a ses **trouvailles** : plumes et algues au bord de l'eau, lucioles la nuit, coquillages en mer, cristaux de glace sur la banquise. Les coffres et les vieilles bottes en donnent aussi. À l'**Atelier**, elles deviennent des appâts : mouche en plumes, pâte d'écailles (des poissons plus gros), leurre nacré, appât de lune, appât givré.
+
+## Les légendes du village
+
+Au **Village**, trois pêcheurs racontent chacun une légende. Il faut suivre leur histoire pas à pas : pêcher certains poissons, trouver un objet rare laissé par la légende, fabriquer son appât unique à l'atelier, puis la pêcher au bon moment.
+
+- **Le vieux brochet du lac** : au Lac de montagne, à l'aube ou au crépuscule, quand le ciel est couvert.
+- **La carpe-lune** : à l'Étang des saules, la nuit, quand la lune est plus qu'à moitié pleine.
+- **Le roi des glaces** : sur la Banquise, la nuit, quand il neige.
+
+Une légende se bat en **trois phases** : elle plonge vers le fond (maintiens et contre ses départs), elle saute (relâche à chaque saut), puis elle donne tout ce qui lui reste (contre chaque départ). Si elle casse le fil, l'appât est perdu, mais on peut en refaire.
+
+## Le tournoi de la semaine
+
+Chaque lundi commence un nouveau **tournoi** dans un lieu : la plus grosse prise, le plus de prises, le plus d'espèces différentes ou le plus de pièces gagnées. Cinq pêcheurs du village pêchent aussi pendant la semaine. Les trois premiers gagnent des pièces, des trouvailles et un trophée.
+
 ## La boutique
 
 - **Cannes** : bambou (de départ), fibre (400), carbone (1 800), compétition (6 000) et stellaire (18 000). Une meilleure canne tient plus de tension, remonte plus vite et attire davantage les poissons rares.
 - **Appâts** : pain (gratuit et illimité), vers de terre, asticots, crevettes, leurre, calamar et appât lumineux, vendus par lots de 10 à 25 lancers. Certains font aussi mordre plus vite.
+- **Montages** : polyvalent, canne légère ou moulinet lourd.
 - **Lieux** : à débloquer avec tes pièces.
 
 ## Collection, défis et niveau
@@ -64,7 +99,7 @@ Le bouton **Plein écran** agrandit le lac à tout l'écran (Échap pour en sort
 
 ## Données et synchronisation
 
-Toute la partie (pièces, matériel, lieux, collection, défis, niveau et heure du jeu) est enregistrée par NeoDex, sauvegardée et synchronisée entre tes PC si la synchro est activée. Au premier lancement, le plugin reprend ce que tu avais déjà dans NeoDex.
+Toute la partie (pièces, matériel, trouvailles, lieux, collection, défis, légendes, tournois, niveau et heure du jeu) est enregistrée par NeoDex, sauvegardée et synchronisée entre tes PC si la synchro est activée. Au premier lancement, le plugin reprend ce que tu avais déjà dans NeoDex.
 
 ## Installer
 

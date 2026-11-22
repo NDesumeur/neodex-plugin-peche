@@ -1,6 +1,6 @@
 # Pêche (Fishing)
 
-A fishing game: cast your line, wait for the bite, strike at the right moment and tire the fish out to reel it in. 153 species across 7 places, each with its own hours, weather and favourite baits, a shop for rods and baits, a collection, daily challenges and an angler level.
+A fishing game: cast your line, wait for the bite, strike at the right moment and tire the fish out to reel it in. 156 species across 7 places, each with its own hours, weather and favourite baits, real seasons and the real moon, three setups, baits to craft, three village legends, a weekly tournament, a shop for rods and baits, a collection, daily challenges and an angler level.
 
 *Version française : [README.md](README.md)*
 
@@ -16,7 +16,7 @@ A fishing game: cast your line, wait for the bite, strike at the right moment an
    - big sporty fish **jump**: let go during the jump to tire it all at once;
    - a worn-out fish comes in quickly. If the line stays slack too long, or it swims too far, it escapes.
 
-You can also reel in an old boot or a **treasure chest** (coins and 5 baits).
+You can also reel in an old boot or a **treasure chest** (coins, 5 baits and finds).
 
 ## Places
 
@@ -38,10 +38,45 @@ Each species has a rarity (common, uncommon, rare, epic, legendary), a minimum a
 
 A fish sells according to its rarity, its size compared with its species and the place. A **streak** of catches without a miss raises the payout, up to +50 %.
 
+## Weather, seasons and moon
+
+- **Weather** changes the fishing: rain makes fish bite faster, storms bring out rare fish but pull harder on the line, fog gives false twitches and fine weather makes fish wary.
+- **Seasons** follow the real calendar: in winter it snows almost everywhere, in autumn leaves fall on the water, in spring petals. Some species come mostly in one season (their card says so).
+- **The moon** follows the real moon: its shape is drawn in the night sky. Some species come mostly at full moon, others at new moon.
+
+## Setups
+
+In the shop, three setups change the way you fish:
+
+| Setup | Price | Effect |
+|---|---|---|
+| All-round | starting setup | balanced |
+| Light rod | 700 coins | small fish ×2, fast reeling, more time to strike; a big fish soon breaks the line |
+| Heavy reel | 3,000 coins | monsters over one metre ×2.5, very strong line, slow reeling; small fish often get off the hook |
+
+## The workshop
+
+Each catch may leave **scales**, and each place has its **finds**: feathers and seaweed by the water, fireflies at night, shells at sea, ice crystals on the ice floe. Chests and old boots give some too. At the **Workshop** they become baits: feather fly, scale paste (bigger fish), pearly lure, moon bait, frost bait.
+
+## The village legends
+
+In the **Village**, three anglers each tell a legend. You follow their story step by step: catch certain fish, find a rare item left by the legend, craft its unique bait at the workshop, then catch it at the right time.
+
+- **The old pike of the lake**: at the Mountain lake, at dawn or dusk, when the sky is overcast.
+- **The moon carp**: at the Willow pond, at night, when the moon is more than half full.
+- **The ice king**: on the Ice floe, at night, when it snows.
+
+A legend fights in **three phases**: it dives to the bottom (hold and counter its runs), it jumps (let go at each jump), then it gives everything it has left (counter each run). If it breaks the line, the bait is lost, but you can make more.
+
+## The weekly tournament
+
+Every Monday a new **tournament** starts in one place: the biggest catch, the most catches, the most different species or the most coins earned. Five village anglers fish during the week too. The top three win coins, finds and a trophy.
+
 ## The shop
 
 - **Rods**: bamboo (starting rod), fibre (400), carbon (1,800), competition (6,000) and stellar (18,000). A better rod holds more tension, reels faster and attracts rare fish more.
 - **Baits**: bread (free and unlimited), earthworms, maggots, shrimps, lure, squid and glowing bait, sold in packs of 10 to 25 casts. Some also make fish bite faster.
+- **Setups**: all-round, light rod or heavy reel.
 - **Places**: to unlock with your coins.
 
 ## Collection, challenges and level
@@ -64,7 +99,7 @@ The **Full screen** button fills the whole screen with the lake (Escape to leave
 
 ## Data and sync
 
-The whole game (coins, gear, places, collection, challenges, level and game time) is stored by NeoDex, backed up and synced between your PCs when sync is on. On first launch, the plugin picks up what you already had in NeoDex.
+The whole game (coins, gear, finds, places, collection, challenges, legends, tournaments, level and game time) is stored by NeoDex, backed up and synced between your PCs when sync is on. On first launch, the plugin picks up what you already had in NeoDex.
 
 ## Install
 
