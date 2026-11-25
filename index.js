@@ -52,6 +52,9 @@ export default async function (ctx) {
   const saveGames = () => { clearTimeout(gamesTimer); gamesTimer = setTimeout(() => { gamesTimer = null; folder.write('games', games).catch(() => {}); }, 500); };
   const best = (k, v, higher = true) => { const b = games.best[k]; if (b == null || (higher ? v > b : v < b)) { games.best[k] = v; saveGames(); return true; } return false; };
   const gstore = (k, init) => (games[k] ??= init);  // la section d'un jeu
+  // les trophées de NeoDex (3.4.8 et plus) : succès et records déclarés dans plugin.json ; sur un NeoDex plus ancien, rien ne se passe
+  const trophy = id => { ctx.games?.unlock(id).catch(() => {}); };
+  const trophyRecord = (id, v) => { if (v != null && Number.isFinite(+v)) ctx.games?.record(id, +v).catch(() => {}); };
 function gameLoop(st, appKey, update, draw) {
   cancelAnimationFrame(st.raf);
   const STEP = 1000 / 60; let acc = 0, last = performance.now();
@@ -898,6 +901,7 @@ function fiDraw() {
 /* ---------- shop, collection and controls (page side) ---------- */
 let fiPanel = '';
 function fiUi() {
+  setTimeout(fiTrophies);
   if (!games) return;
   const s = fiSave(), caught = Object.keys(s.dex).length;
   $('fiSpot').replaceChildren(...s.spots.map(k => { const o = el('option', '', FI_SPOTS[k].name); o.value = k; return o; })); $('fiSpot').value = s.spot;
@@ -1062,5 +1066,15 @@ const aqSave = () => gstore('aquarium', {tanks: [{water: 'douce', size: 0, filte
 const aqKeep = (id, cm) => { const s = aqSave(); s.pool.push({id, cm, k: s.seq++}); if (s.pool.length > 60) s.pool.shift(); };
 { const real = fiLand; fiLand = function () { const f = !fi.special && fi.fish, cm = fi.cm; real(); if (f && games) { aqKeep(f.id, cm); saveGames(); } }; }  // (non indenté : les textes sur plusieurs lignes restent exactement les tiens)
   // ---- fin ----
+  // les trophées, tirés des statistiques et des records gardés (aussi à l'ouverture : ce qui a été fait avant compte)
+  function fiTrophies() {
+    if (!games) return;
+    const s = fiSave(), n = Object.keys(s.dex).length, lv = fiLevel().lv, leg = Object.keys(FI_LEGENDS).filter(k => s.legends[k]?.step === 4).length;
+    const sig = [s.total, n, lv, leg, s.rod, s.spots.length, s.trophies[0], s.best?.rarity].join(); if (sig === fiTrophies.sig) return; fiTrophies.sig = sig;
+    trophyRecord('prises', s.total || null); trophyRecord('especes', n || null); trophyRecord('niveau', s.total ? lv : null);
+    if (s.total >= 1) trophy('premier'); if (s.total >= 100) trophy('cent'); if (s.total >= 1000) trophy('mille');
+    if (n >= 50) trophy('dex50'); if (n >= FISH.length) trophy('dex'); if (s.best?.rarity >= 5) trophy('legendaire'); if (leg >= Object.keys(FI_LEGENDS).length) trophy('histoire');
+    if (s.spots.includes('A')) trophy('abysses'); if (s.rod >= FI_RODS.length - 1) trophy('stellaire'); if (s.trophies[0] >= 1) trophy('tournoi'); if (lv >= 20) trophy('niveau20');
+  }
   ctx.onOpen(() => { fiOpen(); });
 }

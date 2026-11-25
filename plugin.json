@@ -1,7 +1,7 @@
 {
   "id": "neodex.peche",
   "name": "Pêche",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "NDesumeur",
   "description": "Jeu de pêche : dose ton lancer, attends la vraie touche, ferre vite puis fatigue le poisson en gérant la tension et ses départs à gauche ou à droite. 156 espèces sur 7 lieux, chacune avec ses heures, sa météo et ses appâts préférés ; la pluie, l'orage et le brouillard changent la pêche, et certaines espèces suivent les vraies saisons et la vraie lune. 5 cannes et 3 montages (canne légère pour les petites espèces, moulinet lourd pour les monstres), des appâts à fabriquer avec ce que tu trouves, trois légendes du village à pêcher au terme de leur histoire dans un combat en trois phases, un tournoi chaque semaine contre les pêcheurs du village, coffres au trésor, collection, défis du jour et niveau de pêcheur. Sons, musique douce et plein écran.",
   "icon": "icon.png",
@@ -22,5 +22,83 @@
   "sdk": "2.1.0",
   "permissions": [
     "storage"
+  ],
+  "succes": [
+    {
+      "id": "premier",
+      "nom": "Ça mord !",
+      "texte": "Pêcher un premier poisson"
+    },
+    {
+      "id": "cent",
+      "nom": "Pêcheur du dimanche",
+      "texte": "Pêcher 100 poissons"
+    },
+    {
+      "id": "mille",
+      "nom": "Vieux loup de mer",
+      "texte": "Pêcher 1 000 poissons"
+    },
+    {
+      "id": "dex50",
+      "nom": "Carnet bien rempli",
+      "texte": "Trouver 50 espèces"
+    },
+    {
+      "id": "dex",
+      "nom": "Toutes les espèces",
+      "texte": "Trouver les 156 espèces",
+      "cache": true
+    },
+    {
+      "id": "legendaire",
+      "nom": "Une prise de légende",
+      "texte": "Pêcher un poisson légendaire"
+    },
+    {
+      "id": "histoire",
+      "nom": "Les histoires du village",
+      "texte": "Pêcher les 3 légendes du village"
+    },
+    {
+      "id": "abysses",
+      "nom": "Tout au fond",
+      "texte": "Débloquer les Abysses"
+    },
+    {
+      "id": "stellaire",
+      "nom": "Canne des étoiles",
+      "texte": "Acheter la canne stellaire"
+    },
+    {
+      "id": "tournoi",
+      "nom": "Champion de la semaine",
+      "texte": "Finir premier d'un tournoi"
+    },
+    {
+      "id": "niveau20",
+      "nom": "Maître pêcheur",
+      "texte": "Atteindre le niveau 20 de pêcheur"
+    }
+  ],
+  "records": [
+    {
+      "id": "prises",
+      "nom": "Poissons pêchés",
+      "sens": "haut",
+      "format": "nombre"
+    },
+    {
+      "id": "especes",
+      "nom": "Espèces trouvées",
+      "sens": "haut",
+      "format": "nombre"
+    },
+    {
+      "id": "niveau",
+      "nom": "Niveau de pêcheur",
+      "sens": "haut",
+      "format": "nombre"
+    }
   ]
 }
